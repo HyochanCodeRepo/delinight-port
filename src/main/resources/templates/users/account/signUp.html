@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script th:src="@{/js/user.js}" type="text/javascript"></script>
+    <link rel="stylesheet" href="/css/mobile.css">
+    <title>회원가입</title>
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        form label {
+            display: block;
+            margin-top: 16px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        form input[type="text"],
+        form input[type="email"],
+        form input[type="password"],
+        form input[type="tel"],
+        form select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-top: 6px;
+            font-size: 14px;
+        }
+
+        .phone-group input {
+            flex: 1;
+        }
+
+        .terms {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .terms label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .terms input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        button.submit, input.submit {
+            width: 100%;
+            background-color: var(--jin-gray);
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        button.submit:hover, input.submit:hover {
+            background-color: #333;
+        }
+
+        .required {
+            color: red;
+            font-weight: normal;
+            margin-left: 4px;
+        }
+    </style> <!-- signUp-Style-끝 -->
+    <style>
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+
+        .success {
+            color: green;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style> <!-- 유효성 검사 -->
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align: center; margin-bottom: 8px;">회원가입</h2>
+    <p style="text-align: center; margin-bottom: 24px;">계정을 만들어 서비스를 시작하세요.</p>
+
+    <form action="/users/signUp" method="post" class="signUpForm">
+        <div>
+            <label>이름
+                <input type="text" id="name" name="name" class="signUpName" placeholder="이름">
+                <div id="signUpNameError" class="error"></div>
+            </label>
+        </div>
+
+        <div>
+            <label>이메일<span class="required">*</span>
+                <input type="email" id="email" name="email" class="signUpEmail" placeholder="이메일" required>
+                <div id="signUpEmailError" class="error"></div>
+            </label>
+        </div>
+
+        <div>
+            <label>비밀번호
+                <input type="password" id="password" name="password" class="signUpPasswordOne" placeholder="비밀번호">
+                <div id="signUpPasswordError" class="error"></div>
+            </label>
+        </div>
+
+        <div>
+            <label>비밀번호 확인
+                <input type="password" id="confirmPassword" name="confirmPassword" class="signUpPasswordTwo" placeholder="비밀번호 확인">
+                <div id="signUpPasswordErrorTwo" class="error"></div>
+                <div id="signUpPasswordMatchError"></div>
+            </label>
+        </div>
+
+        <div>
+            <label>휴대폰 번호
+                <input type="tel" id="phone" name="phone" class="signUpPhone" placeholder="휴대폰번호">
+                <div id="signUpPhoneError" class="error"></div>
+            </label>
+        </div>
+
+        <div>
+            <label>생년월일
+                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                    <select name="birthYear">
+                        <option value="">연도</option>
+                    </select>
+                    <select name="birthMonth">
+                        <option value="">월</option>
+                    </select>
+                    <select name="birthDay">
+                        <option value="">일</option>
+                    </select>
+                </div>
+            </label>
+        </div>
+
+        <div>
+            <label>주소
+                <input type="text" id="address" name="address" class="signUpAddress" placeholder="주소">
+                <div id="signUpAddressError" class="error"></div>
+            </label>
+        </div>
+
+
+        <div class="terms">
+            <label><input type="checkbox" name="termsAll"> 약관 모두 동의</label>
+            <label><input type="checkbox" name="terms14" required> 만 14세 이상입니다 <span class="required">(필수)</span></label>
+            <label><input type="checkbox" name="termsBrand" required> 브랜드 약관 동의 <span class="required">(필수)</span></label>
+            <label><input type="checkbox" name="termsPrivacy" required> 개인정보수집 및 이용에 대한 안내 <span class="required">(필수)</span></label>
+            <label><input type="checkbox" name="termsMarketing"> 이벤트/마케팅 수신 동의 (선택)</label>
+            <label><input type="checkbox" name="termsNight"> 야간 혜택 알림 수신 동의 (선택)</label>
+        </div>
+
+        <input type="submit" class="signUpBtn submit" value="가입하기">
+
+        <footer style="text-align: center; margin-top: 16px;">
+            <p><a href="/users/login">가입된 회원이신가요?</a></p>
+        </footer>
+    </form>
+</div>
+
+<script>
+    // 연도 자동 생성 로직
+    $(document).ready(function () {
+
+        let currentYear = new Date().getFullYear();
+        for (let y = currentYear; y >= 1900; y--) {
+            $('select[name="birthYear"]').append(`<option value="${y}">${y}</option>`);
+        }
+
+        for (let m = 1; m <= 12; m++) {
+            const val = m.toString().padStart(2, '0');
+            $('select[name="birthMonth"]').append(`<option value="${val}">${val}</option>`);
+        }
+
+        for (let d = 1; d <= 31; d++) {
+            const val = d.toString().padStart(2, '0');
+            $('select[name="birthDay"]').append(`<option value="${val}">${val}</option>`);
+        }
+
+    });
+
+</script> <!-- 연도 자동생성 로직 -->
+
+</body>
+</html>

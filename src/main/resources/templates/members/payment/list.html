@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      layout:decorate="~{layout/desktop/layout}">
+
+<head>
+    <meta charset="UTF-8">
+    <title>정산 내역 조회</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+</head>
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-4">
+
+
+
+            <div class="card custom-shadow mb-4 mt-5">
+
+
+                <div class="card-body" style="padding: 40px 20px 20px 20px">
+
+                    <div class="row text-center mb-3">
+                        <h3><img src="/img/chevron-double-left.svg" class="prevBtn"
+                                 style="width: 27px; height: 27px"><span data-month="" id="currentMonth"></span>월<img
+                                class="nextBtn" src="/img/chevron-double-right.svg" style="width: 28px; height: 28px">
+                        </h3>
+                    </div>
+                    <div class="row gx-4 gy-3 d-flex">
+
+                        <div class="row align-items-center g-3 mb-4">
+
+                            <div class="col d-flex align-items-center" style="flex:0 0 15%">
+                                <label for="startDate" class="mb-0 me-2 fw-bold">시작일</label>
+                                <input type="date" id="startDate" class="form-control mb-0"
+                                       style="width:75%; min-width:150px">
+                            </div>
+                            <div class="col d-flex align-items-center" style="flex:0 0 15%">
+                                <label for="endDate" class="mb-0 me-2 fw-bold">종료일</label>
+                                <input type="date" id="endDate" class="form-control mb-0"
+                                       style="width:75%; min-width:150px">
+                            </div>
+
+                            <select id="paidCheck" class="form-select" style="min-width: 150px; display: none">
+                                <option value="both" selected>전체</option>
+                                <option value="paid">정산완료</option>
+                                <option value="none">미정산</option>
+                            </select>
+                            <div class="col d-flex align-items-center gap-2"
+                                 style="text-align:center; height: 100%; flex:0 0 70%">
+                                <button id="orderBtn" class="btn btn-outline-primary me-2">
+                                    <i class="fas fa-box-open me-2"></i>일별조회
+                                </button>
+
+
+                                <button id="menuBtn" sec:authorize="hasRole('STOREADMIN')"
+                                        class="btn btn-outline-dark me-2">
+                                    <i class="fas fa-utensils me-2"></i>메뉴조회
+                                </button>
+                                <button id="storeBtn" sec:authorize="hasRole('ADMIN')"
+                                        class="btn btn-outline-dark me-2">
+                                    <i class="fas fa-utensils me-2"></i>가맹점조회
+                                </button>
+                                <button id="hotelBtn" sec:authorize="hasRole('SUPERADMIN')"
+                                        class="btn btn-outline-dark me-2">
+                                    <i class="fas fa-utensils me-2"></i>호텔조회
+                                </button>
+                                <button id="downloadBtn" class="btn btn-outline-success">
+                                    <i class="fas fa-download me-2"></i>엑셀다운
+                                </button>
+                                <div class="text-center w-50" style="text-align: center">
+                                    <span>부가세물품가액 : <span id="totalPriceSum" class="text">0</span> 원</span>
+                                    <span style="margin-left: 30px">부가가치세: <span id="totalVat"
+                                                                                 class="text">0</span> 원</span>
+                                    <span style="margin-left: 30px">합계 금액: <span id="totalVatSum"
+                                                                                 class="text">0</span> 원</span>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <div class="col" style="flex: 0 0 70%">
+                            <div class="p-3 border rounded bg-light h-100 overflow-auto" style="width:100%;">
+                                <!-- 차트를 보여줄 캔버스 요소 -->
+                                <canvas id="dynamicChart" style="width:100%;  height:500px"></canvas>
+
+                                <!-- 각 차트별로 보이도록 할 div 영역 (선택적으로 사용) -->
+                                <div id="paymentChart" style="display: none;">
+                                    <canvas id="paymentCanvas" style="width:100%; height:500px"></canvas>
+                                </div>
+                                <div id="orderChart" style="display: none;">
+                                    <canvas id="orderCanvas" style="width:100%; height:500px "></canvas>
+                                </div>
+                                <div id="menuChart" style="display: none;">
+                                    <canvas id="menuCanvas" style="width:100%; height:500px"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col" style="flex: 0 0 25%; overflow-y: auto; height: 500px">
+                            <div class="p-3 border rounded bg-light h-100">
+                                <table id="payInfo" class="table table-striped table-bordered mb-4">
+                                    <thead class="table-light" style="font-size: 16px">
+                                    <tr>
+                                        <th>결제일</th>
+                                        <th>주문 건수</th>
+                                        <!--                                    <th>부가세</th>-->
+                                        <th>합계금액</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+
+                                    </tbody>
+                                </table>
+                                <!-- 메뉴 관련 테이블을 추가하려면 동일한 테이블 내에서 메뉴 항목들을 추가합니다 -->
+                                <table id="menuInfo" class="table table-striped table-bordered mb-4"
+                                       style="display:none;">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>메뉴 이름</th>
+                                        <th>가격</th>
+                                        <th>수량</th>
+                                        <th>총 금액</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="menuInfoBody">
+
+                                    </tbody>
+                                </table>
+                                <table id="storeInfo" class="table table-striped table-bordered mb-4"
+                                       style="display:none;">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>가맹점 이름</th>
+                                        <th>주문 건수</th>
+                                        <th>총 금액</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="storeInfoBody">
+
+                                    </tbody>
+                                </table>
+                                <table id="hotelInfo" class="table table-striped table-bordered mb-4"
+                                       style="display:none;">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>호텔 이름</th>
+                                        <th>주문 건수</th>
+                                        <th>총 금액</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="hotelInfoBody">
+
+                                    </tbody>
+                                </table>
+                                <table id="dateInfo" class="table table-striped table-bordered mb-4"
+                                       style="display:none;">
+                                    <thead class="table-light">
+                                    <tr>
+                                        <th>날짜</th>
+                                        <th>주문건수</th>
+                                        <th>금액</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="dateInfoBody">
+
+                                    </tbody>
+                                </table>
+
+
+                            </div>
+                        </div>
+                        <div class="row">
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+
+    <script>
+
+        const today = new Date();
+        var currentMonth = today.getMonth() + 1
+
+
+        $(document).ready(function () {
+                $(".prevBtn").on("click", function () {
+                    previousMonth()
+                })
+                $(".nextBtn").on("click", function () {
+                    nextMonth()
+                })
+                // 데이터를 저장할 변수
+                let paymentData = []
+                let orderData = []
+                let menuData = []
+                let storeData = []
+                let hotelData = []
+                let chartInstance = null
+
+                createChart('payment')
+                setPeriodAndLoad()
+
+                function showTable(tableType) {
+                    console.log(`테이블 표시 : ${tableType}`)
+
+                    $('#payInfo').hide()
+                    $('#menuInfo').hide()
+                    $('#storeInfo').hide()
+                    $('#hotelInfo').hide()
+
+                    switch (tableType) {
+
+                        case 'payment':
+                        case 'order':
+                            $('#payInfo').show()
+                            break
+                        case 'menu':
+                            $('#menuInfo').show()
+                            break
+                        case 'store':
+                            $('#storeInfo').show()
+                            break
+                        case 'hotel':
+                            $('#hotelInfo').show()
+                            break
+                        case 'orderExcel':
+                            $('#payInfo').show()
+                        default:
+                            console.log("알 수 없는 테이블 타입입니다.", tableType)
+                            break
+
+                    }
+
+                }
+
+                // 차트 데이터를 가져오는 함수
+                function getChartData(chartType) {
+                    console.log(`차트 데이터 가져오기: ${chartType}`)
+
+                    let labels = []
+                    let data = []
+
+
+                    switch (chartType) {
+
+                        // case 'payment':
+                        //     paymentData.forEach(function (payment) {
+                        //         if (payment.ordersDTOList && Array.isArray(payment.ordersDTOList)) {
+                        //             totalOrdersPrice += payment.ordersDTOList.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
+                        //         }
+                        //         labels.push(payment.totalId)
+                        //         data.push(totalOrdersPrice)
+                        //     })
+                        //
+                        //     break
+
+                        case 'payment':
+                            const sumsByDate = orderData.reduce((acc, order) => {
+                                const dt = new Date(order.regTime);
+                                const key = `${String(dt.getMonth() + 1).padStart(2, '0')}.${String(dt.getDate()).padStart(2, '0')}`;
+                                acc[key] = (acc[key] || 0) + (order.totalPrice / 11 * 10 || 0);
+                                return acc;
+                            }, {});
+
+                            // 2) 키(날짜) 오름차순 정렬
+                            const sortedDates = Object.keys(sumsByDate)
+                                .sort((a, b) => {
+                                    const [am, ad] = a.split('.').map(Number);
+                                    const [bm, bd] = b.split('.').map(Number);
+                                    return am * 100 + ad - (bm * 100 + bd);
+                                });
+
+                            // 3) labels/data 배열에 채우기
+                            labels = sortedDates;
+                            data = sortedDates.map(d => sumsByDate[d]);
+                            break;
+
+                        case 'menu':
+                            menuData.forEach(function (item) {
+                                labels.push(item.menuName)  // 메뉴 이름
+                                data.push(item.totalPrice)  // 총 가격
+                            })
+                            break
+
+                        case 'store':
+                            storeData.forEach(function (store) {
+                                labels.push(store.name)
+                                data.push(store.totalPrice)
+                            })
+                            break
+
+                        case 'hotel':
+                            hotelData.forEach(function (hotel) {
+                                labels.push(hotel.name)
+                                data.push(hotel.totalPrice)
+                            })
+                            break
+
+                        default:
+                            break
+
+                    }
+
+                    console.log('차트 데이터:', {labels: labels, data: data})
+                    return {labels: labels, data: data}
+                }
+
+                // 차트 업데이트 함수
+                function updateChart(chartType) {
+                    const ctx = document.getElementById('dynamicChart').getContext('2d');
+                    const chartData = getChartData(chartType);
+
+                    const chartTypeMap = {
+                        payment: 'line',   // 날짜별은 선형 차트
+                        menu: 'bar',
+                        store: 'bar',
+                        hotel: 'bar'
+                    };
+
+                    const type = chartTypeMap[chartType] || 'bar';  // 기본은 bar
+
+                    if (chartInstance) {
+                        chartInstance.destroy();  // 기존 차트 제거
+                    }
+
+                    chartInstance = new Chart(ctx, {
+                        type: type,
+                        data: {
+                            labels: chartData.labels,
+                            datasets: [{
+                                label: '금액',
+                                data: chartData.data,
+                                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 2,
+                                fill: type === 'line'  // 선형일 경우에만 fill
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: true
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 차트 생성 함수
+                function createChart(chartType) {
+                    console.log(`차트 생성: ${chartType}`)
+                    let chartData = getChartData(chartType)
+
+                    let ctx = document.getElementById('dynamicChart').getContext('2d')
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                    }
+
+                    chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: chartData.labels,
+                            datasets: [{
+                                label: chartType === 'payment' ? '결제 금액' : chartType === 'order' ? '주문 금액' : '메뉴 금액',
+                                data: chartData.data,
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            legend: {
+                                display: false
+                            },
+                            responsive: false,
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    beginAtZero: true,    // 0부터 시작
+                                    min: 0,
+                                    ticks: {
+                                        stepSize: 10000,
+
+                                    }
+                                }
+                            }
+                        }
+                    })
+                }
+
+                function handleDateAndLoadData(chartType) {
+                    let startDateStr = $('#startDate').val()
+                    let endDateStr = $('#endDate').val()
+
+                    if (!startDateStr || !endDateStr) {
+                        alert('시작일과 종료일을 모두 선택해 주세요.')
+                        return
+                    }
+
+                    let startDate = new Date(startDateStr)
+                    let endDate = new Date(endDateStr)
+
+                    if (startDate > endDate) {
+                        alert('시작일은 종료일보다 늦을 수 없습니다.')
+                        return
+                    }
+
+                    startDateStr = formatDate(startDate)
+                    endDateStr = formatDate(endDate)
+
+                    console.log(`차트 타입: ${chartType}, 시작일: ${startDateStr}, 종료일: ${endDateStr}`)
+
+                    switch (chartType) {
+                        case 'order':
+                            loadOrderData(startDateStr, endDateStr)
+                            break
+                        case 'menu':
+                            loadMenuData(startDateStr, endDateStr)
+                            break
+                        case 'orderExcel':
+                            loadOrderExcelData(startDateStr, endDateStr)
+                            break
+                        default:
+                            alert('알 수 없는 차트 타입입니다.')
+                            return
+                    }
+
+                    showChart(chartType)
+                }
+
+
+                $('#dateBtn').on('click', function () {
+                    handleDateAndLoadData('payment')
+                    showTable('payment')
+                })
+
+                $('#orderBtn').on('click', function () {
+                    handleDateAndLoadData('order')
+                    showTable('order')
+                })
+
+
+                $('#downloadBtn').on('click', function () {
+
+                    let startDateStr = $('#startDate').val()
+                    let endDateStr = $('#endDate').val()
+                    let storeId = $('#storeId').val()
+
+
+                    window.location.href = '/api/payment/totalPrice?startDate=' + startDateStr + '&endDate=' + endDateStr + '&storeId=' + storeId + '&paidCheck=both&download=true'
+                })
+
+                $('#menuBtn').on('click', function () {
+                    handleDateAndLoadData('menu')
+                    showTable('menu')
+                })
+
+                $('#storeBtn').on('click', function () {
+                    updateChart('store');
+                    showTable('store');
+                });
+
+                $('#hotelBtn').on('click', function () {
+                    updateChart('hotel');
+                    showTable('hotel');
+                });
+
+                function showChart(chartId) {
+                    console.log(`차트 표시: ${chartId}`)
+                    $('#paymentChart').hide()
+                    $('#orderChart').hide()
+                    $('#menuChart').hide()
+                    $('#' + chartId).show()
+                }
+
+
+                function formatDate(date) {
+                    let year = date.getFullYear()
+                    let month = String(date.getMonth() + 1).padStart(2, '0')
+                    let day = String(date.getDate()).padStart(2, '0')
+                    return `${year}-${month}-${day}`
+                }
+
+                function setPeriodAndLoad() {
+                    let startDate = new Date(today.getFullYear(), today.getMonth(), 2)
+                    let endDate = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+                    let format = (d) => d.toISOString().split('T')[0]
+
+                    $("#currentMonth").attr("data-month", today.getMonth() + 1)
+                    $("#currentMonth").html(today.getMonth() + 1)
+                    $('#startDate').val(format(startDate))
+                    $('#endDate').val(format(endDate))
+
+                    loadPaymentData(format(startDate), format(endDate))
+                    showTable('payment')
+                }
+
+                function previousMonth() {
+                    currentMonth = currentMonth - 1
+                    let startDate = new Date(today.getFullYear(), currentMonth - 1, 2)
+                    let endDate = new Date(today.getFullYear(), currentMonth, 1)
+                    let format = (d) => d.toISOString().split('T')[0]
+
+                    $('#startDate').val(format(startDate))
+                    $('#endDate').val(format(endDate))
+
+                    loadPaymentData(format(startDate), format(endDate))
+                    showTable('payment')
+                    $("#currentMonth").html(currentMonth)
+                }
+
+                function nextMonth() {
+                    currentMonth = currentMonth + 1
+                    let startDate = new Date(today.getFullYear(), currentMonth - 1, 2)
+                    let endDate = new Date(today.getFullYear(), currentMonth, 1)
+                    let format = (d) => d.toISOString().split('T')[0]
+
+                    $('#startDate').val(format(startDate))
+                    $('#endDate').val(format(endDate))
+
+                    loadPaymentData(format(startDate), format(endDate))
+                    showTable('payment')
+                    $("#currentMonth").html(currentMonth)
+                }
+
+                function loadOrderExcelData(startDateStr, endDateStr) {
+                    console.log('결제 엑셀 로드 시작')
+                    let storeId = $('#storeId').val()
+                    if (storeId === "") storeId = null
+
+                    let data = {
+                        startDate: startDateStr,
+                        endDate: endDateStr,
+                        storeId: storeId,
+                        paidCheck: $('#paidCheck').val(),
+                        download: true
+                    }
+
+
+                    $.ajax({
+                        url: '/api/payment/totalPrice',
+                        method: 'get',
+                        data: data,
+                        success: function (response) {
+                            if (response === undefined) {
+                                alert("해당 날짜 및 조건에 존재하는 주문건이 없습니다.")
+                                return
+                            }
+
+                            paymentData = response
+                            orderData = response
+                            menuData = response
+
+                            updateTotalPrice(response)
+                            handleFetchedData(response)
+                            updatePaymentTables(response)
+                            updateChart('payment')
+                            showTable('order')
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("조회 실패:", status, error, xhr.responseText)
+                        }
+                    })
+                }
+
+                function loadPaymentData(startDateStr, endDateStr) {
+                    console.log('결제 데이터 로드 시작')
+
+                    let data = {
+                        startDate: startDateStr,
+                        endDate: endDateStr,
+                        paidCheck: $('#paidCheck').val(),
+                        download: false
+                    }
+
+
+                    $.ajax({
+                        url: '/api/payment/totalPrice',
+                        method: 'get',
+                        data: data,
+                        success: function (response) {
+                            if (response === undefined) {
+                                alert("해당 날짜 및 조건에 존재하는 주문건이 없습니다.")
+                                return
+                            }
+
+
+                            console.log('결제 데이터 로드 성공', response)
+                            paymentData = response
+                            orderData = response
+                            menuData = response
+
+                            updateTotalPrice(response)
+                            handleFetchedData(response)
+                            updatePaymentTables(response)
+                            updateChart('payment')
+                            showTable('order')
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("조회 실패:", status, error, xhr.responseText)
+                        }
+                    })
+                }
+
+                function addCommas(number) {
+                    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+
+                function updateTotalPrice(data) {
+
+                    let totalAmount = 0;
+                    let totalVat = 0;
+                    let totalFinalAmount = 0;
+
+
+                    data.forEach(paymentOne => {
+                        totalAmount += paymentOne.unpaid
+                        totalVat += paymentOne.vat
+                        totalFinalAmount += paymentOne.totalPrice
+
+                    })
+
+
+                    $("#totalPriceSum").html(addCommas(totalAmount))
+                    $("#totalVat").html(addCommas(totalVat))
+                    $("#totalVatSum").html(addCommas(totalFinalAmount))
+
+                }
+
+                function loadOrderData(startDateStr, endDateStr) {
+                    loadPaymentData(startDateStr, endDateStr)
+                }
+
+                function loadMenuData(startDateStr, endDateStr) {
+                    console.log('메뉴 데이터 로드 시작')
+                    let storeId = $('#storeId').val()
+                    if (storeId === "") storeId = null
+
+                    let data = {
+                        startDate: startDateStr,
+                        endDate: endDateStr,
+                        storeId: storeId,
+                        paidCheck: $('#paidCheck').val(),
+                        download: false
+                    }
+
+                    $.ajax({
+                        url: '/api/payment/totalPrice',  // 메뉴 관련 API로 수정
+                        method: 'get',
+                        data: data,
+                        success: function (response) {
+                            if (response === undefined) {
+                                alert("해당 날짜 및 조건에 존재하는 메뉴 데이터가 없습니다.")
+                                return
+                            }
+                            console.log('메뉴 데이터 로드 성공', response)
+                            menuData = response  // 메뉴 데이터만 업데이트
+
+                            updateTotalPrice(response)
+                            handleFetchedData(response)  // 메뉴 데이터를 테이블에 처리
+                            updateChart('menu')  // 메뉴 차트 업데이트
+                            showTable('menu')  // 메뉴 테이블로 전환
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("조회 실패:", status, error, xhr.responseText)
+                        }
+                    })
+                }
+
+                function handleFetchedData(response) {
+                    console.log("데이터 처리 시작");
+                    let menuList = [];
+                    let storeMap = new Map();
+                    let hotelMap = new Map();
+
+                    response.forEach(payment => {
+                        if (payment.ordersDTOList && Array.isArray(payment.ordersDTOList)) {
+                            payment.ordersDTOList.forEach(order => {
+                                // 메뉴별 데이터 처리 (기존과 동일)
+                                if (order.ordersItemDTOList && Array.isArray(order.ordersItemDTOList)) {
+                                    order.ordersItemDTOList.forEach(item => {
+                                        const menuName = item.menuDTO ? item.menuDTO.name : '-';
+                                        const menuPrice = item.menuDTO ? item.menuDTO.price : 0;
+                                        const quantity = item.quantity || 0;
+                                        const totalPrice = menuPrice * quantity;
+
+                                        const existingMenuItem = menuList.find(m => m.menuName === menuName);
+                                        if (!existingMenuItem) {
+                                            menuList.push({menuName, menuPrice, quantity, totalPrice});
+                                        } else {
+                                            existingMenuItem.quantity += quantity;
+                                            existingMenuItem.totalPrice += totalPrice;
+                                        }
+                                    });
+                                }
+
+                                // 스토어별 데이터 처리 (주문 건수 포함)
+                                if (order.storeDTO) {
+                                    const storeName = order.storeDTO.name || '-';
+                                    const totalPrice = order.totalPrice || 0;
+
+                                    if (storeMap.has(storeName)) {
+                                        const existingStore = storeMap.get(storeName);
+                                        storeMap.set(storeName, {
+                                            name: storeName,
+                                            orderCount: existingStore.orderCount + 1,
+                                            totalPrice: existingStore.totalPrice + totalPrice
+                                        });
+                                    } else {
+                                        storeMap.set(storeName, {name: storeName, orderCount: 1, totalPrice});
+                                    }
+                                }
+
+                                // 호텔별 데이터 처리 (주문 건수 포함)
+                                if (order.storeDTO && order.storeDTO.hotelDTO) {
+                                    const hotelName = order.storeDTO.hotelDTO.name || '-';
+                                    const totalPrice = order.totalPrice || 0;
+
+                                    if (hotelMap.has(hotelName)) {
+                                        const existingHotel = hotelMap.get(hotelName);
+                                        hotelMap.set(hotelName, {
+                                            name: hotelName,
+                                            orderCount: existingHotel.orderCount + 1,
+                                            totalPrice: existingHotel.totalPrice + totalPrice
+                                        });
+                                    } else {
+                                        hotelMap.set(hotelName, {name: hotelName, orderCount: 1, totalPrice});
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                    console.log("menuList:", menuList);
+                    console.log("storeMap:", storeMap);
+                    console.log("hotelMap:", hotelMap);
+
+                    menuData = menuList;
+                    storeData = Array.from(storeMap.values());
+                    hotelData = Array.from(hotelMap.values());
+
+                    updateChart('payment'); // 초기 차트는 일별로 유지
+                    updateMenuTable(menuList);
+                    updateStoreTable(storeData);
+                    updateHotelTable(hotelData);
+                }
+
+                function updateMenuTable(data) {
+                    $('#menuInfo').show();
+                    let tbody = $('#menuInfoBody');
+                    tbody.empty();
+                    data.forEach(item => {
+                        let row = $('<tr>').html(`
+                <td>${item.menuName}</td>
+                <td>${item.menuPrice.toLocaleString()} 원</td>
+                <td>${item.quantity}</td>
+                <td>${item.totalPrice.toLocaleString()} 원</td>
+            `);
+                        tbody.append(row);
+                    });
+                }
+
+            function updateStoreTable(data) {
+                $('#storeInfo').show();
+                let tbody = $('#storeInfoBody');
+                tbody.empty();
+                data.forEach(store => {
+                    let row = $('<tr>').html(`
+                <td>${store.name}</td>
+                <td>${store.orderCount} 건</td>
+                <td>${store.totalPrice.toLocaleString()} 원</td>
+            `);
+                    tbody.append(row);
+                });
+            }
+
+            function updateHotelTable(data) {
+                $('#hotelInfo').show();
+                let tbody = $('#hotelInfoBody');
+                tbody.empty();
+                data.forEach(hotel => {
+                    let row = $('<tr>').html(`
+                <td>${hotel.name}</td>
+                <td>${hotel.orderCount} 건</td>
+                <td>${hotel.totalPrice.toLocaleString()} 원</td>
+            `);
+                    tbody.append(row);
+                });
+            }
+
+
+            function updatePaymentTables(response) {
+                    console.log('결제 테이블 업데이트 시작')
+                    let $tbody = $('#payInfo tbody')
+                    $tbody.empty()
+
+                    // 1) 날짜별로 그룹핑
+                    const grouped = response.reduce((acc, payment) => {
+                        // YYYY.MM.DD 포맷으로 키 생성
+                        const dt = new Date(payment.regTime);
+                        const key = dt.getFullYear() + '.' +
+                            String(dt.getMonth() + 1).padStart(2, '0') + '.' +
+                            String(dt.getDate()).padStart(2, '0');
+
+                        if (!acc[key]) {
+                            acc[key] = {
+                                date: key,
+                                sumPrice: 0,
+                                sumVat: 0,
+                                count: 0
+                            };
+                        }
+                        const group = acc[key]
+                        group.count += 1;
+                        // 각 payment 의 totalOrdersPrice 계산
+                        const ordersSum = (payment.ordersDTOList || [])
+                            .reduce((s, o) => s + (o.totalPrice || 0), 0);
+                        acc[key].sumPrice += ordersSum;
+                        acc[key].sumVat += ordersSum * 0.1;  // VAT 계산 방식 그대로 반영
+                        return acc;
+                    }, {});
+
+                    // 2) 그룹을 배열로 바꿔 날짜순 정렬
+                    const rows = Object.values(grouped)
+                        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                    // 3) 테이블에 렌더링
+                    rows.forEach(r => {
+                        $tbody.append(`
+            <tr>
+                <td>${r.date}</td>
+                <td>${r.count} 건</td>
+                <td>${r.sumPrice.toLocaleString()} 원</td>
+            </tr>
+        `);
+                    });
+
+                    console.log('날짜별 테이블 업데이트 완료');
+                }
+            }
+        )
+    </script>
+
+
+</div>
+</body>
+</html>

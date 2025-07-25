@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+    <head>
+        <title>델리나잇</title>
+    </head>
+
+    <body>
+    <!--이 줄 div layout:fragment명과 id명 절대 수정 금지!!!!-->
+    <div layout:fragment="adminContent" id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-5">
+                <div class="card custom-shadow mb-4 mt-5">
+                    <div class="card-body">
+                        <!--페이지 이름-->
+                        <h3 th:text="${storeDTO.name}"> 정보수정</h3>
+                        <ol class="breadcrumb mb-5">
+                            <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                            <a href="#" class="breadcrumb-item active no-click">가맹점 관리</a>
+                        </ol>
+
+                        <form action="/members/store/update" method="post">
+
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label">가맹점명</label>
+                                <div class="col-sm-3">
+                                    <input name="name" type="text" class="form-control" th:placeholder="${storeDTO.name}">
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label">가맹점 소개</label>
+                                <div class="col-sm-4">
+                                    <textarea name="content" class="form-control" rows="1" style="height: 8rem; overflow:hidden;" th:text="${storeDTO.content}"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label">대표 이미지</label>
+                                <div class="col-sm-4">
+                                    <input type="file" accept="image/*" class="imgInput form-control ">
+                                    <input hidden readonly name="id" th:value="${storeDTO.id}">
+                                    <img width="40%" class="menuImg mt-3" th:src="${imgUrl}">
+                                    <div class="hiddenImgNum"></div>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary me-2 px-4">저장</button>
+                                <a th:href="@{/members/store/read(id=${storeId})}" class="btn btn-gray px-4">취소</a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <script>
+            function autoResize(a) {
+                a.style.height = 'auto'; // 높이 초기화
+                a.style.height = a.scrollHeight + 'px'; // 글자 수에 맞게 높이 조정
+            }
+        </script>
+        
+        <div th:fragment="pagescript">
+            <script th:src="@{/js/imgscript.js}" type="text/javascript"></script>
+
+        </div>
+
+        <!--푸터 절대 수정 금지!!!!-->
+        <!--푸터-->
+        <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+    </div>
+
+
+</body>
+</html>

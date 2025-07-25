@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+
+                    <h3 id="test">체크인 현황</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">체크인 관리</a>
+                    </ol>
+
+                    <!--네비게이션-->
+                    <ul class="nav nav-pills mb-4">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               th:classappend="${checkinstatus == null or checkinstatus == ''} ? 'active'"
+                               aria-current="page" th:href="@{/members/checkin/list(checkinstatus=null)}">전체 방 목록</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:classappend="${checkinstatus == 'VACANCY'} ? 'active'"
+                               th:href="@{/members/checkin/list(checkinstatus='VACANCY')}">빈 방</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" th:classappend="${checkinstatus == 'CHECKIN'} ? 'active'"
+                               th:href="@{/members/checkin/list(checkinstatus='CHECKIN')}">투숙중인 방</a>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex flex-wrap mb-4">
+                        <div class="d-flex align-items-center me-4">
+                            <label class="form-label" style="width: 150px;">예약 번호</label>
+                            <input type="text" id="reservationNum" class="form-control me-2">
+                            <button class="btn btn-primary" id="reservBtn"><i class="fas fa-magnifying-glass"></i>
+                            </button>
+                            <button class="btn btn-outline-primary" style="margin-left:10px ; width: 300px" data-bs-toggle="modal" data-bs-target="#reservList"
+                                    id="reservCheck">예약 리스트 확인
+                            </button>
+                        </div>
+                        <div class="d-flex align-items-center me-4">
+                            <label class="form-label" style="width: 150px;">회원 조회</label>
+                            <input type="email" id="emailcheck" class="form-control me-2">
+                            <button class="btn btn-primary" id="checkIdBtn" ><i class="fas fa-magnifying-glass"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="result" hidden="hidden" class="border rounded p-4 bg-gradient mb-3"
+                         style="width: 300px; position: absolute; top: 120px; right: 20px; font-size: 0.8rem">
+                        <p class="mb-1">userId : <span id="id"></span></p>
+                        <p class="mb-1">이름 : <span id="name"></span></p>
+                        <p class="mb-1">이메일 : <span id="email"></span></p>
+                        <p class="mb-0">핸드폰번호 : <span id="phone"></span></p>
+                    </div>
+
+
+                    <table class="table align-middle table-hover">
+
+                        <thead>
+                        <th scope="col">#</th>
+                        <th scope="col">이름</th>
+                        <th scope="col">체크인</th>
+                        <th scope="col">체크아웃</th>
+                        <th scope="col">전화번호</th>
+                        <th scope="col">이메일</th>
+                        <th scope="col">비밀번호</th>
+                        <th scope="col">결제 금액</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="resultCol" hidden="hidden">회원등록</th>
+                        </thead>
+
+                        <tbody id="checkinTable">
+                        <th:block th:each="list, stat:${checkInDTOList}">
+                            <tr>
+                                <th scope="row offset-4" th:text="${list.id}" th:value="${list.id}" class="checkinId"
+                                    hidden="hidden"></th>
+                                <th scope="row" th:text="${stat.count}"></th>
+
+                                <td>
+                                    <div th:text="${list.roomDTO.name}" class="radiusRoom">></div>
+                                </td>
+                                <td>
+                                    <th:block th:if="${list.checkinDate != null}">
+                                        <span th:text="${list.checkinDate}"></span>
+                                    </th:block>
+                                    <th:block th:if="${list.checkinDate == null}">
+                                        <input name="checkinDate" class="checkinDate" type="date">
+                                    </th:block>
+                                </td>
+
+                                <td>
+                                    <th:block th:if="${list.checkoutDate != null}">
+                                        <span th:text="${list.checkoutDate}"></span>
+                                    </th:block>
+                                    <th:block th:if="${list.checkoutDate == null}">
+                                        <input class="checkoutDate" type="date" name="checkoutDate">
+                                    </th:block>
+                                </td>
+
+                                <td>
+
+                                    <th:block th:if="${list.guestDTO != null}">
+                                        <span th:text="${list.guestDTO.phone}"></span>
+                                    </th:block>
+                                    <th:block th:if="${list.guestDTO == null and list.usersDTO != null}">
+                                        <span th:text="${list.usersDTO.phone}"></span>
+                                    </th:block>
+                                    <th:block th:if="${list.guestDTO == null and list.usersDTO == null}">
+                                        <input placeholder="핸드폰번호" class="phone">
+                                    </th:block>
+                                </td>
+                                <td>
+                                    <th:block th:if="${list.guestDTO == null and list.usersDTO == null}">
+                                        <input class="email" placeholder="이메일">
+                                        <input class="userId" hidden="hidden">
+                                    </th:block>
+                                    <th:block th:if="${list.guestDTO != null}">
+                                        <span th:text="${list.guestDTO.email}"></span>
+                                        <input class="userId" hidden="hidden">
+                                    </th:block>
+                                    <th:block th:if="${list.usersDTO != null}">
+                                        <span th:text="${list.usersDTO.email}"></span>
+                                        <input class="userId" hidden="hidden">
+                                    </th:block>
+
+                                </td>
+
+
+                                <td>
+                                    <th:block th:if="${list.getPassword == null}">
+                                        <th:block th:if="${list.getUsersDTO() != null}">
+                                            <span>CheckIn</span>
+                                        </th:block>
+                                        <span th:if="${list.getUsersDTO() == null}" class="password" id="password">Vacancy</span>
+
+                                    </th:block>
+                                    <!--                                    유저면-->
+                                    <th:block th:if="${list.getPassword != null and list.usersDTO != null}">
+                                        <span th:text="${list.getPassword}"></span>
+                                        <span><i class="fa-solid fa-user-check text-success"></i></span>
+                                    </th:block>
+                                    <!--                                    게스트면-->
+                                    <th:block th:if="${list.getPassword != null and list.guestDTO != null}">
+                                        <span th:text="${list.getPassword}"></span>
+
+                                    </th:block>
+                                </td>
+                                <td>
+                                    <!--결제 금액 들어올 자리-->
+                                    <th:block th:if="${list.price == null}">
+                                        <span>null</span>
+                                    </th:block>
+
+                                    <th:block th:if="${list.price != null}">
+                                        <span th:text="${list.price}"></span>
+                                    </th:block>
+                                </td>
+                                <td>
+                                    <th:block th:if="${list.checkInStatus.name() == 'CHECKIN'}">
+                                        <button class="btn btn-danger" id="checkoutBtn" th:value="${list.id}">체크아웃
+                                        </button>
+                                    </th:block>
+                                    <th:block th:if="${list.checkInStatus.name() == 'VACANCY'}">
+                                        <button class="btn btn-success" id="checkinBtn" th:value="${list.id}">체크인
+                                        </button>
+                                    </th:block>
+                                </td>
+
+                                <td class="trContainer" style="display: none">
+                                    <button th:data-checkinid="${list.id}" class="plusBtn btn btn-outline-success"
+                                            style="display: inline;"><i class="fa-solid fa-user-plus"></i></button>
+                                    <button th:data-checkinid="${list.id}" class="minusBtn btn btn-outline-danger"
+                                            style="display: none"><i class="fa-solid fa-user-minus"></i></button>
+
+                                </td>
+
+
+                            </tr>
+
+
+                        </th:block>
+
+
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="modal fade" id="reservList" tabindex="-1" aria-labelledby="reservList" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">예약 리스트</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="font-size: 14px">
+                        <table class="table table-striped">
+
+                            <thead>
+                            <th>
+                                룸 넘버
+                            </th>
+                            <th>
+                                예약 번호
+                            </th>
+
+                            <th>
+                                체크인 날짜
+                            </th>
+                            <th>
+                                체크아웃 날짜
+                            </th>
+                            <th>
+                                요청
+                            </th>
+                            <th>
+                                체크인하기
+                            </th>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>3</td>
+                                <td>3/250520250523/7253</td>
+                                <td>05-20</td>
+                                <td>05-21</td>
+                                <td>고층 / 2bed </td>
+                                <td><button class="checkin btn btn-outline-primary">적용</td>
+                            </tr><tr>
+                                <td>4</td>
+                                <td>4/250520250523/3242</td>
+                                <td>05-20</td>
+                                <td>05-21</td>
+                                <td>저층 / 1bed </td>
+
+                                <td><button class="checkin btn btn-outline-primary">적용</td>
+
+                            </tr><tr>
+                                <td>5</td>
+                                <td>5/250520250523/1435</td>
+                                <td>05-20</td>
+                                <td>05-21</td>
+                                <td>저층 / 1bed</td>
+
+                                <td><button class="checkin btn btn-outline-primary">적용</button></td>
+
+                            </tr><tr>
+                                <td>6</td>
+                                <td>15/250520250523/5324</td>
+                                <td>05-20</td>
+                                <td>05-21</td>
+                                <td>고층 / 2be</td>
+
+                                <td><button class="checkin btn btn-outline-primary">적용</button></td>
+
+                            </tr><tr>
+                                <td>9</td>
+                                <td>15/250520250523/3321</td>
+                                <td>05-20</td>
+                                <td>05-21</td>
+                                <td>고층 / 1bed</td>
+
+                                <td><button class="checkin btn btn-outline-primary">적용</button></td>
+
+                            </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!--스크립트 시작 -->
+    <script>
+
+
+        function formatDate(dateString) {
+            let year = "20" + dateString.substring(0, 2);
+            let month = dateString.substring(2, 4);
+            let day = dateString.substring(4, 6);
+            return `${year}-${month}-${day}`;
+        }
+
+        function updateRow(roomid, checkinDate, checkoutDate, password) {
+            // 모든 checkinId 순회
+            let row = $("th.checkinId").filter(function () {
+                let renderedId = $(this).text().trim(); // th 태그의 렌더링된 텍스트 값 가져오기
+                console.log("현재 행의 roomid (렌더링된): ", renderedId, " / 비교 대상: ", roomid); // 디버깅 로그
+                return renderedId === roomid.toString(); // roomid와 비교
+            }).closest("tr"); // 매칭된 태그의 부모 <tr> 찾기
+
+            if (row.length) {
+                console.log("매칭된 행을 찾았습니다: ", row); // 성공적으로 찾은 행 출력
+                // 해당 행의 입력 필드 값 설정
+                row.find(".checkinDate").val(checkinDate);
+                row.find(".checkoutDate").val(checkoutDate);
+                row.find(".password").text(password);
+
+            } else {
+                console.error("해당 roomId를 가진 행을 찾을 수 없습니다: " + roomid);
+            }
+        }
+
+        function updateRow2(id, phone, email, userId) {
+            // 모든 checkinId 순회
+            let row = $("th.checkinId").filter(function () {
+                let renderedId = $(this).text().trim(); // th 태그의 렌더링된 텍스트 값 가져오기
+                console.log("현재 행의 roomid (렌더링된): ", renderedId, " / 비교 대상: ", id); // 디버깅 로그
+                return renderedId === id.toString(); // roomid와 비교
+            }).closest("tr"); // 매칭된 태그의 부모 <tr> 찾기
+
+            if (row.length) {
+                console.log("매칭된 행을 찾았습니다: ", row); // 성공적으로 찾은 행 출력
+                // 해당 행의 입력 필드 값 설정
+                row.find(".phone").val(phone);
+                row.find(".email").val(email);
+                row.find(".userId").val(userId);
+
+            } else {
+                console.error("해당 roomId를 가진 행을 찾을 수 없습니다: " + roomid);
+            }
+        }
+
+        function updateRow3(id, phone, email) {
+            // 모든 checkinId 순회
+            let row = $("th.checkinId").filter(function () {
+                let renderedId = $(this).text().trim(); // th 태그의 렌더링된 텍스트 값 가져오기
+                console.log("현재 행의 roomid (렌더링된): ", renderedId, " / 비교 대상: ", id); // 디버깅 로그
+                return renderedId === id.toString(); // roomid와 비교
+            }).closest("tr"); // 매칭된 태그의 부모 <tr> 찾기
+
+            if (row.length) {
+                console.log("매칭된 행을 찾았습니다: ", row); // 성공적으로 찾은 행 출력
+                // 해당 행의 입력 필드 값 설정
+                row.find(".phone").val(null);
+                row.find(".email").val(null);
+
+            } else {
+                console.error("해당 roomId를 가진 행을 찾을 수 없습니다: " + roomid);
+            }
+        }
+
+
+        $(function () {
+            $(document).on("click", "#checkinBtn", function () {
+                let id = this.getAttribute("value");
+                let checkinDate = $(this).closest("tr").find(".checkinDate").val();
+                let checkoutDate = $(this).closest("tr").find(".checkoutDate").val();
+                let phone = $(this).closest("tr").find(".phone").val();
+                let email = $(this).closest("tr").find(".email").val();
+                let userId = $(this).closest("tr").find(".userId").val();
+
+                if (!checkinDate || !checkoutDate || !phone || !email) {
+                    alert("⚠️ 모든 항목을 입력해야 체크인할 수 있습니다!")
+                    return;
+                }
+
+                $.ajax({
+                    url: "/checkin/rest/register",
+                    type: "post",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        id: id,
+                        checkinDate: checkinDate,
+                        checkoutDate: checkoutDate,
+                        phone: phone,
+                        email: email,
+                        userId: userId
+
+                    }),
+                    success: function (data) {
+                        console.log(data)
+                        alert("✅ 체크인이 완료되었습니다!")
+                        location.reload()
+                    },
+                });
+            });
+        });
+
+        $(function () {
+
+            $(".checkin").on("click",function () {
+                const $tr = $(this).closest('tr');        // 버튼이 속한 tr 찾기
+                const reservNum = $tr.find('td').eq(1).text();
+                $("#reservationNum").val(reservNum)
+
+                $("#reservList").modal('hide');
+
+            })
+            $(document).on("click", "#checkoutBtn", function () {
+                let id = $(this).val();
+
+
+                $.ajax({
+                    url: "/checkin/rest/out?id=" + id,
+                    type: "post",
+
+                    success: function (data) {
+                        console.log(data)
+                        alert("✅ 체크아웃이 완료되었습니다!")
+                        location.reload()
+                    },
+                })
+            });
+        });
+
+        $(function () {
+
+            $(document).on("click", ".plusBtn", function () {
+                let id = $(this).data("checkinid")
+                let phone = $("#phone").text();
+                let email = $("#email").text();
+                let userId = $("#id").text();
+
+
+                updateRow2(id, phone, email, userId);
+                $(".plusBtn").hide();
+                $(".minusBtn").show();
+
+
+            })
+            $(document).on("click", ".minusBtn", function () {
+                let id = $(this).data("checkinid")
+                let phone = $("#phone").text();
+                let email = $("#email").text();
+
+
+                updateRow3(id, phone, email);
+
+                $(".plusBtn").show();
+                $(".minusBtn").hide();
+
+            })
+
+            $(document).on("click", "#checkIdBtn", function () {
+                let emailcheck = $("#emailcheck").val();
+                let result = document.getElementById('result');
+
+
+                $.ajax({
+                    url: "/checkin/rest/checkemail",
+                    type: "post",
+                    data: {"emailcheck": emailcheck},
+                    success: function (usersDTO) {
+
+
+                        $("#name").text(usersDTO.name);
+                        $("#email").text(usersDTO.email);
+                        $("#phone").text(usersDTO.phone);
+                        $("#id").text(usersDTO.id);
+
+                        let newRow =
+                            `
+                        <tr>
+                            <td>${usersDTO.name}</td>
+                            <td>${usersDTO.email}</td>
+                            <td>${usersDTO.id}</td>
+                        </tr>
+                        `
+                        $("#checkinTable tbody").append(newRow);
+                        $(".trContainer").show();
+                        $(".resultCol").removeAttr("hidden");
+
+
+                        result.hidden = false;
+
+
+                    },
+                    error: function () {
+                        let newRow =
+                            `
+                            <tr>
+                                <td>해당하는 이메일 정보가 없습니다.</td>
+                            </tr>
+                            `
+                        $("#checkinTable tbody").append(newRow);
+                        $(".trContainer").show();
+                        result.hidden = false;
+                        alert("해당하는 이메일 정보가 없습니다..")
+
+                    },
+                })
+            });
+        });
+
+
+        $(function () {
+
+
+            $(document).on("click", "#reservBtn", function () {
+                let reservNum = $("#reservationNum").val();
+                let id = $(".checkinId").val();
+
+                alert(reservNum);
+
+                $.ajax({
+                    url: "/checkin/rest/reservation",
+                    type: "post",
+                    data: {"reservNum": reservNum},
+                    success: function (response) {
+                        let roomid = response.roomid;
+                        let checkinDate = formatDate(response.checkinDate);
+                        let checkoutDate = formatDate(response.checkoutDate);
+                        let password = response.password;
+
+                        updateRow(roomid, checkinDate, checkoutDate, password)
+
+                    },
+                })
+            });
+        });
+    </script>
+
+    <!--스크립트 끝 -->
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

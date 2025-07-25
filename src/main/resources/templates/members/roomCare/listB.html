@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>[[${hotelDTO.name}]] 룸케어 요청 내역</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/home" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">룸 케어 관리</a>
+                    </ol>
+
+                    <!--네비게이션-->
+                    <ul class="nav nav-pills mb-4" id="myTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="home-tab" data-bs-toggle="tab"
+                                    data-bs-target="#processing"
+                                    type="button"
+                                    role="tab" aria-controls="home" aria-selected="true">룸 케어 요청 건
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#complete"
+                                    type="button" role="tab" aria-controls="profile" aria-selected="false">룸 케어 완료 건
+                            </button>
+                        </li>
+                    </ul>
+                    <h4 th:if="${dataMsg}" th:text="${dataMsg}"></h4>
+
+                    <div class="tab-content">
+                        <div id="processing" class="tab-pane show active" style=" height: 500px; overflow-y: auto">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th scope="col">요청 번호</th>
+                                    <th scope="col">룸</th>
+                                    <th scope="col">주문 시간</th>
+                                    <th scope="col">답변 시간</th>
+                                    <th scope="col">요청 서비스</th>
+                                    <th scope="col">주문 상태</th>
+                                    <th scope="col">상태 변경</th>
+                                </tr>
+                                </thead>
+                                <tbody class="trWrap">
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="complete" class="tab-pane" style=" height: 500px; overflow-y: auto">
+                            <table class="table align-middle">
+                                <thead>
+                                <tr>
+                                    <th scope="col">요청 번호</th>
+                                    <th scope="col">룸</th>
+                                    <th scope="col">주문 시간</th>
+                                    <th scope="col">답변 시간</th>
+                                    <th scope="col">요청 서비스</th>
+                                    <th scope="col">주문 상태</th>
+                                </tr>
+                                </thead>
+                                <tbody class="trWrap2">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script text="javascript">
+
+            $(function () {
+                    showList()
+                    $(document).on("click", ".menuCheckBtn", function () {
+                        showMenuList($(this))
+                    })
+
+
+                    $(document).on("click", ".changeStatusBtn", function () {
+                        changeStatus($(this))
+                    })
+
+                    function changeStatus(e) {
+                        let roomCareId = e.data("roomcareid")
+                        $.ajax({
+
+                            url: "/members/roomCare/rest/changeStatus/" + roomCareId,
+                            type: "get",
+                            success: function () {
+                                showList()
+                            }
+                        })
+
+                    }
+
+                    function showList() {
+
+                        let str = "";
+                        let str2 = "";
+                        $.ajax({
+                            url: "/members/roomCare/rest/showList",
+                            type: "get",
+                            success: function (response) {
+                                $(".trWrap .trWrap2").empty();
+
+
+                                response.forEach(function (tr) {
+
+                                    let itemNames = []
+                                    let itemQuantity = []
+                                    console.log(tr)
+                                    tr.roomCareItemDTOList.forEach(function (item) {
+                                        itemNames.push(item.roomCareMenuDTO.name)
+                                        itemQuantity.push(item.quantity)
+                                    })
+                                    if (tr.deliveredTime === null) {
+                                        str += "<tr><td>" + tr.id + "</td><td>" + tr.checkInDTO.roomDTO.name + "</td><td>" + formatDateToMmDdHhMm(tr.awaitingTime) + "</td><td>-</td><td><button class='btn btn-outline-success menuCheckBtn' data-itemname='" + itemNames + "' data-itemquantity='" + itemQuantity + "'  data-roomcareid='" + tr.id + "'>확인</button></td><td>처리중</td><td><button class='btn btn-outline-primary changeStatusBtn' data-roomcareid='" + tr.id + "'>변경하기</button></td></tr>"
+                                    } else {
+                                        str2 += "<tr><td>" + tr.id + "</td><td>" + tr.checkInDTO.roomDTO.name + "</td><td>" + formatDateToMmDdHhMm(tr.awaitingTime) + "</td><td>" + formatDateToMmDdHhMm(tr.deliveredTime) + "</td><td><button class='btn btn-outline-dark menuCheckBtn' data-itemname='" + itemNames + "' data-itemquantity='" + itemQuantity + "'  data-roomcareid='" + tr.id + "'>확인</button></td><td>처리완료</td></tr>"
+                                    }
+                                })
+
+                                $(".trWrap").html(str)
+                                $(".trWrap2").html(str2)
+                            }
+                        })
+
+                    }
+
+                    function formatDateToMmDdHhMm(dateString) {
+                        const date = new Date(dateString);
+
+                        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                        const day = date.getDate().toString().padStart(2, '0');
+
+                        const hours = date.getHours().toString().padStart(2, '0');
+                        const minutes = date.getMinutes().toString().padStart(2, '0');
+
+                        return `${month}-${day} ${hours}:${minutes}`;
+                    }
+
+
+                    function showMenuList(e) {
+                        let itemNameArray = e.data("itemname")
+                        let processedNames = [];
+                        if (itemNameArray.includes(",")) {
+                            console.log("포함으로 들어옴")
+                            processedNames = itemNameArray.split(",")
+                        } else {
+                            processedNames.push(itemNameArray)
+                        }
+                        let itemQuantityArray = e.data("itemquantity")
+                        let processedQuantity = [];
+
+                        if ($.isNumeric(itemQuantityArray)) {
+                            processedQuantity.push(itemQuantityArray)
+                        } else {
+                            processedQuantity = itemQuantityArray.split(",")}
+
+                        let menuStr = "<table class='table table-striped'><thead><th>요청 서비스</th><th>수량</th></thead><tbody>"
+
+                        for (i = 0; i < processedNames.length; i++) {
+                            menuStr += "<tr><td>" + processedNames[i] + "</td><td>" + processedQuantity[i] + "</td></tr>"
+                        }
+                        menuStr += "</tbody></table>";
+                        Swal.fire({
+                            title: '요청사항',
+                            html: menuStr,
+                            width: '650px',
+                        })
+                    }
+
+
+                }
+            )
+
+
+        </script>
+    </main>
+
+    <div layout:fragment="pagescript">
+
+    </div>
+    <div layout:fragment="pagecss">
+
+    </div>
+
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

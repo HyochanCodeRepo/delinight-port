@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+    <title>델리나잇 Deli-night</title>
+</head>
+
+<body>
+    <nav th:fragment="adminHeader" class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <!--델리나잇 로고-->
+        <div class="navbar-brand ps-3">
+            <a class="navbar-brand-a" href="/members/account/dashHub">Deli-Night</a>
+        </div>
+
+        <!--사이드바 토글 버튼-->
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
+
+        <div class="navbar-nav ms-auto me-3 me-lg-4">
+            <div class="navbar-hover">
+                <!--멤버 아이콘 & 알림-->
+                <div class="icon-wrap">
+                    <div class="nav-link"><i class="fas fa-user"></i></div>
+                    <span class="notification-badge custom-shadow" th:if="${alertCount != 0 and member.role.name != 'SUPERADMIN'}" th:text="${alertCount}"></span>
+                </div>
+                <!--툴팁-->
+                <div class="profile-tooltip-wrap">
+                    <div class="profile-tooltip custom-shadow">
+                        <!--툴팁 헤더 (내정보)-->
+                        <div class="profile-header">
+                            <img class="avatar" id="profile-avatar" src="/img/defaultProfile.jpeg" alt="#">
+                            <div class="user-info">
+                                <div class="user-info-title">
+
+                                    <strong th:text="${member.name}"></strong>
+                                    <div class="user-info-role" th:text="${member.role}">SuperADMIN</div>
+                                </div>
+                                <div th:text="${member.email}">guide@mysupereasy.co.kr</div>
+
+                                <div><span>Deli-Night</span></div>
+                            </div>
+                        </div>
+
+                        <!--툴팁 메뉴 (마이페이지 & 알림)-->
+                        <ul class="menu-list">
+                            <li><a href="/members/account/mypage"><i class="fas fa-circle-user"></i>마이페이지</a></li>
+
+                            <div class="icon-wrap">
+                                <li th:if="${member.role.name == 'STOREADMIN'}"><a href="/members/store/orders/list"><i class="fas fa-bell"></i>주문알림</a></li>
+                                <li th:if="${member.role.name == 'ADMIN'}"><a href="/members/inquire/list"><i class="fas fa-bell"></i>문의알림</a></li>
+                                <span class="notification-badge custom-shadow"
+                                      th:if="${alertCount != 0 and member.role.name != 'SUPERADMIN'}"
+                                      th:text="${alertCount}"></span>
+                            </div>
+                        </ul>
+                        <!--로그아웃 버튼-->
+                        <form id="logoutForm" action="/members/account/logout" method="post" style="display: none;"></form>
+                        <a href="#" class="logout-btn" onclick="document.getElementById('logoutForm').submit(); return false;">로그아웃</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+</body>
+</html>

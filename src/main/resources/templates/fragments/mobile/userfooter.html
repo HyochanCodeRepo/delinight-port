@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layoutOne}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <title>Title</title>
+</head>
+<body>
+<div th:fragment="userFooter">
+    <nav class="navbar navbar-expand-sm footer">
+        <div class="container justify-content-center bg-light">
+            <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
+                <span class="text-muted small">© 2025 Deli_Night</span>
+                <a href="/terms" class="text-muted text-decoration-none small">이용약관</a>
+                <a href="/privacy" class="text-muted text-decoration-none small">개인정보처리방침</a>
+                <a href="/support" class="text-muted text-decoration-none small">고객센터</a>
+            </div>
+        </div>
+    </nav>
+</div>
+</body>
+</html>

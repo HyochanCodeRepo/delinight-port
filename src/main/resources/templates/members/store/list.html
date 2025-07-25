@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+        <style>
+            .modal-content {
+                position: absolute;
+                top: -20px;
+            }
+            .modal-body{
+                height: 400px;
+                overflow-y: auto;
+                overflow-x: hidden;
+            }
+        </style>
+
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>등록된 가맹점 목록</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">가맹점 관리</a>
+                    </ol>
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#storeCreate">
+                            새 가맹점 +
+                        </button>
+                    </div>
+
+                    <table class="table align-middle table-hover">
+
+                        <thead>
+                        <th scope="col">#</th>
+                        <th scope="col">이름</th>
+                        <th scope="col">설명</th>
+                        <th scope="col">관리자</th>
+                        <th scope="col"></th>
+                        <th scope="col">수정</th>
+                        </thead>
+
+                        <tbody>
+                        <th:block  th:each="list,stat:${storeDTOList}">
+                            <tr>
+                                <th scope="row offset-4" th:text="${list.id}" hidden="hidden"></th>
+                                <th scope="row" th:text="${stat.count}"></th>
+                                <td th:text="${list.name}"></td>
+                                <td th:text="${list.content}"></td>
+                                <td>
+                                    <span th:if="${list.membersDTO != null}" th:text="${list.membersDTO.name}"></span>
+                                    <button th:if="${list.membersDTO == null}" type="button" class="addMembers btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" th:data-storeid="${list.getId()}">
+                                        추가하기
+                                    </button>
+                                </td>
+                                <td>
+                                    <a th:if="${list.membersDTO != null}" class="modiMembers btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" th:data-name="${list.membersDTO.name}" th:data-storeid="${list.getId()}" href="#">관리자 변경</a>
+                                </td>
+                                <td>
+                                    <a th:if="${list.membersDTO != null}" class=" btn btn-outline-success modiStoreBtn" data-bs-toggle="modal" data-bs-target="#exampleModal2" th:data-name="${list.membersDTO.name}" th:data-storeid="${list.getId()}" ><i class="fa-solid fa-pen hoverBtn"></i></a>
+                                    <a th:value="${list.id}" id="delBtn" class="btn btn-outline-danger delStoreBtn"><i class="fa-solid fa-trash hoverBtn"></i></a>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+
+                    <!-- 가맹점 추가 Modal -->
+                    <div class="modal fade" id="storeCreate" tabindex="-1" aria-labelledby="storeCreateLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="storeCreateLabel">새 가맹점 등록하기</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="mb-3">
+                                            <label class="form-label">가맹점명</label>
+                                            <input type="text" class="form-control storeName" placeholder="가맹점 이름을 입력하세요">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">가맹점 소개</label>
+                                            <textarea type="text" class="form-control storeContent" placeholder="간단한 소개를 입력하세요"></textarea>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="formFileLg">가맹점 배너 이미지</label>
+                                            <input name="image" class="form-control imgInput" id="formFileLg" type="file">
+                                            <div class="form-text">이미지를 넣어주세요.</div>
+                                        </div>
+                                        <div class="hiddenImgNum"></div>
+
+                                    </form>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                    <button type="button" class="btn btn-primary saveBtn" data-bs-dismiss="modal">저장</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 가맹점 정보수정 Modal -->
+                    <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <label class="col-form-label form-label ms-2" id="exampleModalLabel2">가맹점 정보수정</label>
+                                    <button type="button" class="btn btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control name" id="name2" placeholder="가맹점명">
+                                    </div>
+                                    <div>
+                                        <textarea type="text" class="form-control content" id="content2" placeholder="설명"></textarea>
+                                    </div>
+                                    <div id="hiddenId" data-id=""></div>
+
+
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                    <button type="button" class="btn btn-primary" id="room_modifybtn">저장</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 관리자 변경 Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <label class="col-form-label form-label ms-2" id="exampleModalLabel">관리자 변경</label>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                        <th>#</th>
+                                        <th>이름</th>
+                                        <th>이메일</th>
+                                        <th></th>
+                                        </thead>
+                                        <tbody class="resultSpace">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                    <button type="button" class="btn btn-primary">저장</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!--스크립트 시작 -->
+    <script>
+
+        $(function () {
+            $(".saveBtn").on("click", function () {
+                let hiddenImgNum = $(".imgNum").val()
+
+                let storeName = $(".storeName").val()
+                let storeContent = $(".storeContent").val()
+                let hotelId = $(".hotelId").val()
+                $.ajax({
+
+                    url:"/members/store/create",
+                    type:"post",
+                    data:{
+                        name: storeName,
+                        content : storeContent,
+                        hotelId : hotelId,
+                        imgNum : hiddenImgNum
+                    },
+                    success : function (msg) {
+                        window.location.reload()
+                    },
+                    error : function () {
+                        alert("오류 발생")
+                    }
+
+                })
+            })
+        })
+
+        $(document).on("click", ".modiStoreBtn", function () {
+            let targetModal = $("#exampleModal2");
+            targetModal.modal("show");
+
+            // 클릭한 tr의 스토어 이름과 설명 추출
+            let $tr = $(this).closest("tr");
+            let name = $tr.find("td").eq(0).text();
+            let content = $tr.find("td").eq(1).text();
+
+            // 모달 input에 값 넣어주기
+            $("#name2").val(name.trim());
+            $("#content2").val(content.trim());
+        });
+
+        $(document).on("click", ".modiMembers2", function () {
+            let memberId = $(this).data("memberid")
+            let storeId = $(".resultSpace").data("storeid")
+            let listName = $(this).data("name")
+
+            $.ajax({
+                url: "/store/rest/modify",
+                type: "post",
+                data : {"memberId": memberId, "storeId" : storeId},
+                success: function () {
+                    location.reload();
+                },
+                error: function () {
+                    swal.fire({
+                        title:"관리자 추가 불가",
+                        text:"이미 타 가맹점에 할당된 관리자 입니다.",
+                        icon:"error"
+
+                    })
+                },
+            })
+        });
+
+        $(document).on("click", ".modiMembers", function () {
+            let storeId = $(this).data("storeid");
+            let currentName = $(this).data("name")
+
+            $.ajax({
+                url: "/store/rest/membersList",
+                type: "get",
+                success:function (result) {
+                    $(".resultSpace").empty();
+                    let topRow = null;
+                    result.forEach(function (resultItem) {
+                        let tr = $("<tr></tr>")
+                        if (resultItem.name === currentName) {
+                            topRow = $("<tr></tr>")
+                            topRow.append("<td>" + resultItem.id + "</td>");
+                            topRow.append("<td>" + resultItem.name + "</td>");
+                            topRow.append("<td>" + resultItem.email + "</td>");
+                            topRow.append("<td><button class='btn btn-gray modiMembers2' disabled data-memberid='" + resultItem.id + "'>현재 관리자</button></td>");
+                        } else {
+                            tr.append("<td>" + resultItem.id + "</td>");
+                            tr.append("<td>" + resultItem.name + "</td>");
+                            tr.append("<td>" + resultItem.email + "</td>");
+                            tr.append("<td><button class='btn-outline-primary btn modiMembers2' data-memberid='" + resultItem.id + "'>등록</button></td>");
+                        }
+
+
+                        $(".resultSpace").append(tr);
+                        $(".resultSpace").attr("data-storeid",storeId);
+
+                    });
+                    if (topRow) {
+                        $(".resultSpace").prepend(topRow)
+                    }
+
+
+                }
+
+
+            })
+        });
+
+        $(document).on("click", ".addMembers2", function () {
+            let memberId = $(this).data("memberid");
+            let storeId = $(".resultSpace").data("storeid");
+            $.ajax({
+                url: "/store/rest/addMember",
+                type: "post",
+                data: {"memberId":memberId, "storeId": storeId},
+                success: function (result) {
+                    if(result==="멤버 중복"){
+                        alert("멤버가 중복되었습니다");
+
+                    }
+                    alert("멤버가 추가됨");
+                    location.reload();
+                },
+                error: function () {
+
+                    swal.fire({
+                        title:"관리자 추가 불가",
+                        text:"이미 타 가맹점에 할당된 관리자 입니다.",
+                        icon:"error"
+
+                    })
+                },
+
+            })
+        });
+
+
+        $(document).on("click",".addMembers",function () {
+            let storeId = $(this).data("storeid")
+            $.ajax({
+                url: "/store/rest/membersList",
+                type: "get",
+                success:function (result) {
+                    $(".resultSpace").empty();
+                    result.forEach(function (resultItem) {
+                        let tr = $("<tr></tr>")
+
+                        tr.append("<td>" + resultItem.id + "</td>");
+                        tr.append("<td>" + resultItem.name + "</td>");
+                        tr.append("<td>" + resultItem.email + "</td>");
+                        tr.append("<td><button class='btn-primary btn addMembers2' data-memberid='" + resultItem.id + "'>추가하기</button></td>");
+
+                        $(".resultSpace").append(tr);
+                        $(".resultSpace").attr("data-storeid",storeId);
+
+                    });
+
+
+                }
+
+
+            })
+
+        })
+
+        $(function (){
+            $(document).on("click", "#delBtn", function () {
+
+                alert(123)
+                let id = this.getAttribute("value");
+
+                Swal.fire({
+                    title: '삭제하시겠습니까?',
+                    text: "데이터가 손실될 수 있습니다.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: '취소',
+                    confirmButtonText: '확인',
+                    reverseButtons: false,
+
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url : "/store/rest/del",
+                            type: "delete",
+                            data: {id : id},
+                            success: function () {
+                                Swal.fire(
+                                    '삭제가 완료되었습니다.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                })
+                            },
+                            error: function () {
+
+                            },
+                        })
+
+
+                    }
+
+                })
+            });
+        })
+    </script>
+
+    <!--스크립트 끝 -->
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mt-5 mb-4">
+                <div class="card-body">
+                    <h3>본사 정보 수정</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="/members/center/read" class="breadcrumb-item active">본사 관리</a>
+                    </ol>
+
+                    <form action="/members/center/update" method="post">
+                        <input type="hidden" name="id" th:value="${center.id}">
+                        <div class="d-flex">
+                            <div class="w-50">
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label form-label">호텔명</label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control" name="name" th:value="${center.name}">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label form-label">설명</label>
+                                    <div class="col-sm-8">
+                                        <textarea name="content" class="form-control" th:text="${center.content}"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="mt-5 text-center">
+                            <button type="submit" class="btn btn-primary">저장</button>
+                            <a th:href="@{/members/center/read}" class="btn btn-gray">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!--스크립트 끝 -->
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

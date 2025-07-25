@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+
+    <!--별도 css 필요할 시 아래로 추가-->
+    <!--어디서 그대로 가져오는거 아니면 클래스 이름 잘 붙여주고
+    styles.css에 작성할것-->
+</head>
+
+<body>
+<!--이 줄 div layout:fragment명과 id명 절대 수정 금지!!!!-->
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <!--내용 넣는 곳-->
+            <!--반드시 이 아래에서만 작업-->
+
+            <!--페이지 이름-->
+            <h3 class="mt-5">정보수정</h3>
+            <ol class="breadcrumb mb-4">
+                <a href="/members/account/home" class="breadcrumb-item active">홈</a>
+                <a href="#" class="breadcrumb-item active no-click">마이페이지</a>
+                <a href="/members/account/mypage" class="breadcrumb-item active">내 정보</a>
+            </ol>
+
+            <!--텍스트 박스-->
+            <div class="card mb-4 custom-shadow">
+                <div class="card-body">
+
+                    <h5 class="mb-4 fw-bold">기본 정보</h5>
+
+                    <hr class="hrMain">
+
+                    <form action="/members/account/update" method="post">
+                        <div class="row mb-1">
+                            <label class="col-sm-2 col-form-label form-label">관리자 이름</label>
+                            <div class="col-sm-4">
+                                <input type="text" readonly class="form-control-plaintext" th:value="${member.name}">
+                            </div>
+                        </div>
+
+                        <div class="row mb-1">
+                            <label class="col-sm-2 col-form-label form-label">관리자 등급</label>
+                            <div class="col-sm-4">
+                                <input type="text" readonly class="form-control-plaintext" th:value="${member.role}">
+                            </div>
+                        </div>
+
+                        <div class="row mb-1">
+                            <label class="col-sm-2 col-form-label form-label">이메일</label>
+                            <div class="col-sm-6">
+                                <input type="email" readonly class="form-control-plaintext" th:value="${member.email}">
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="row mb-4">
+                            <label class="col-sm-2 col-form-label form-label">전화번호</label>
+                            <div class="col-sm-3">
+                                <input type="text" class="form-control" id="staticMembersPhone" name="phone" maxlength="11" th:placeholder="${member.phone}">
+                                <div class="text-sm mt-1" th:if="${phoneError == null}">
+                                    변경할 전화번호를 입력해주세요.
+                                </div>
+                                <div class="text-sm mt-1 text-danger" th:if="${phoneError != null}" th:text="${phoneError}"></div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <label class="col-sm-2 col-form-label form-label">로그인 비밀번호</label>
+                            <div class="col-sm-3">
+                                <button type="button" class="btn btn-gray-outline" id="togglePasswordChange">비밀번호 변경</button>
+                            </div>
+                            <div class="col-sm-1 iconX">
+                                <div>&times;</div>
+                            </div>
+                        </div>
+
+                        <div id="passwordChangeSection">
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label"></label>
+                                <div class="col-sm-4">
+                                    <input type="password" name="currentPassword" class="form-control" maxlength="16" placeholder="현재 비밀번호">
+                                    <div class="text-sm mt-1 text-danger" th:text="${currentPasswordError}"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label">새 비밀번호</label>
+                                <div class="col-sm-4">
+                                    <input type="password" name="newPassword" class="form-control" maxlength="16">
+                                    <div class="text-sm mt-1">
+                                        영문/숫자/특수문자 조합(8~16자로 작성) <br>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label">새 비밀번호 확인</label>
+                                <div class="col-sm-4">
+                                    <input type="password" name="confirmPassword" class="form-control" maxlength="16">
+                                    <div class="text-sm mt-1 text-danger" th:text="${confirmPasswordError}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-primary me-2 px-4">저장</button>
+                            <a href="/members/account/mypage" class="btn btn-gray px-4">취소</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!--전화번호 입력창 하이폰-->
+    <script>
+        document.getElementById("staticMembersPhone").addEventListener("input", function (e) {
+            let value = e.target.value.replace(/\D/g, ""); // 숫자만 남김
+            e.target.value = value;
+        });
+    </script>
+
+    <!--비밀번호 변경창 토글-->
+    <script>
+        $('#togglePasswordChange').on('click', function () {
+            $('#passwordChangeSection').slideDown(200);
+            $('.iconX').addClass('open');
+        });
+
+        $('.iconX').on('click', function () {
+            $('#passwordChangeSection').slideUp(200);
+            $('.iconX').removeClass('open');
+        });
+    </script>
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragmentes/desktop/adminfooter::adminFooter}"></div>
+</div>
+
+</body>
+</html>

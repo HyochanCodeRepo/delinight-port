@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<!--layout:fragment명과 id명 절대 수정 금지!!!!-->
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <!--텍스트 박스-->
+            <div class="card mb-4 mt-5">
+                <div class="card-body">
+                    <h3>등록된 브랜드 목록</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">브랜드 관리</a>
+                    </ol>
+
+                    <div class="d-flex">
+                        <div class="w-50">
+                            <table class="table align-middle">
+                                <thead>
+                                <th scope="col">#</th>
+                                <th scope="col">브랜드명</th>
+                                <th scope="col">브랜드 설명</th>
+                                <th scope="col"></th>
+
+                                <div class="col offset-8">
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <label class="col-form-label form-label ms-2">새 브랜드 등록</label>
+                                                    <button type="button" class="btn btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <input type="text" for="name" class="form-control name" id="name" placeholder="브랜드명">
+                                                    </div>
+                                                    <div>
+                                                        <textarea type="text" for="content" class="form-control content" id="content" placeholder="설명"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-primary brand_registerbtn">저장</button>
+                                                    <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                </thead>
+                                <tbody>
+                                <th:block  th:each="list,stat:${brandDTOList}">
+                                    <tr>
+                                        <th scope="row offset-4" th:text="${list.id}" hidden="hidden"></th>
+                                        <th scope="row" th:text="${stat.count}"></th>
+                                        <td><a class="alink-title text-dark" readonly="">
+                                            [[${list.name}]]
+                                        </a>
+                                        </td>
+                                        <td th:text="${list.content}"></td>
+                                        <td>
+                                            <button type="button" class="btn btn-outline-danger brand_dbtn" id="delBtn" th:value="${list.id}"><i class="fa-solid fa-trash" style="color: #dc3545"></i></button>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="w-50">
+                            <!-- Button trigger modal -->
+                            <button type="button" class="btn btn-primary modalregister ms-5"
+                                    data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                새 브랜드 +
+                            </button>
+                        </div>
+                    </div>
+               </div>
+            </div>
+        </div>
+    </main>
+
+
+<script th:inline="javascript">
+
+    let test = document.getElementById("name").value;
+    console.log(test);
+    console.log(name);
+    let modalregister = $(".modalregister")
+    let modal = $(".modal")
+    let brand_registerbtn = $(".brand_registerbtn")
+    let brand_dbtn = $(".brand_dbtn")
+
+    brand_dbtn.on("click", function () {
+        let num = this.getAttribute("value")
+        $.ajax({
+            url: "/brand/rest/del",
+            method: "post",
+            data: {num : num},
+            success: function () {
+                location.reload();
+            },
+            error: function () {
+            },
+        })
+    });
+
+    brand_registerbtn.on("click", function () {
+        let name = $("#name").val()
+        let content = $("#content").val()
+
+        let brandDTO = {
+            name: name,
+            content: content
+        }
+        console.log(brandDTO)
+
+        $.ajax({
+            url: "/brand/rest/register",
+            method: "post",
+            data: brandDTO,
+            success: function (data) {
+                location.reload();
+            },
+        })
+    });
+</script>
+
+<!--푸터-->
+<!--콘텐츠 내부에 포함된 형식이므로 첨삭 엄금!!!-->
+<div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

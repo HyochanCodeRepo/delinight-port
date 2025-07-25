@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+    <head>
+        <title>델리나잇</title>
+
+        <!--css, link, -->
+    </head>
+
+    <body>
+        <!--layout:fragment명과 id명 절대 수정 금지!!!!-->
+        <div layout:fragment="adminContent" id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-5">
+                    <!--작업 영역-->
+                    <!--반드시 이 안에서만 작업-->
+
+                    <!--페이지 제목 명명-->
+                    <h3 class="mt-5">페이지명</h3>
+                    <ol class="breadcrumb mb-4">
+                        <!--페이지 소제목 명명-->
+                        <li class="breadcrumb-item active">큰페이지 〉 중간페이지 〉 작은페이지</li>
+                    </ol>
+
+                    <!--기본 카드 양식-->
+                    <div class="card custom-shadow mb-4">
+                       <div class="card-body">
+                           <!--카드 제목-->
+                           <h5 class="mb-4 fw-bold">기본 정보</h5>
+
+                           <!--카드 제목 구분선-->
+                           <hr class="hrMain">
+
+                           <!--기본 row 양식-->
+                           <!--양식처럼 요소를 깔끔하게 배치하고 싶다면 이 div를 그대로 복붙한 뒤 내용을 수정하세요-->
+                           <!--이때, row는 행이므로 이 클래스를 삭제하면 요소에 col이 먹지 않습니다-->
+                           <!--이때, col-sm-숫자 는 row에서 요소가 차지하는 자리비율이므로 col이 여러개일 시 +-가 필요합니다(하나를 높이면 하나를 줄여야함)-->
+                           <div class="row mb-1">
+                               <!--row 제목 (기본 col-sm-2)-->
+                               <label class="col-sm-2 col-form-label form-label">리드온리 인풋창</label>
+                               <!--row 콘텐츠 (기본 col-sm-4-->
+                               <div class="col-sm-4">
+                                   <input type="text" readonly class="form-control-plaintext" id="staticMembersName" value="홍길동">
+                               </div>
+                           </div>
+
+                           <!--기본 구분선-->
+                           <hr>
+
+                           <div class="row mb-4">
+                               <label class="col-sm-2 col-form-label form-label">일반 인풋창</label>
+                               <div class="col-sm-10">
+                                   <input type="text" class="form-control">
+                               </div>
+                           </div>
+
+                           <div class="row mb-4">
+                               <label class="col-sm-2 col-form-label form-label">플레이스홀더&작은글</label>
+                               <div class="col-sm-10">
+                                   <input type="number" class="form-control" id="staticMembersPhone" maxlength="13" placeholder="원래있던번호">
+                                   <div class="text-sm mt-1">
+                                       전화번호를 입력하면 자동으로 하이폰이 들어갑니다. (01012345678 > 010-1234-5678)
+                                   </div>
+                               </div>
+                           </div>
+
+                           <div class="row mb-4">
+                               <label class="col-sm-2 col-form-label form-label">파일첨부</label>
+                               <div class="col-sm-10">
+                                   <div class="d-flex">
+                                       <input type="file" class="form-control w-50 me-2">
+                                       <button class="btn btn-gray">파일 선택</button>
+                                   </div>
+                                   <div class="text-sm mt-1">
+                                       accept=""으로 첨부 가능한 파일 형식 지정 가능
+                                   </div>
+                               </div>
+                           </div>
+
+                           <div class="text-center mt-5">
+                               <button class="btn btn-primary me-2 px-4">확인</button>
+                               <button class="btn btn-gray px-4">취소</button>
+                           </div>
+                       </div>
+                    </div>
+
+                    <!--기본 알럿 양식-->
+                    <!--알럿 사용 시, alert.js 파일에서 사용할 부분만 복사한 뒤 본 작업파일 하단 스크립트란에 붙여 사용-->
+                    <div class="card custom-shadow mb-4">
+                        <div class="card-body">
+                            <h5 class="mb-4 fw-bold">알럿창</h5>
+                            <hr class="hrMain">
+
+                            <!--알럿 버튼 양식-->
+                            <!--마음에 드는 양식을 골라 복붙하여 사용(클래스 따라 css가 자동으로 적용됨)-->
+                            <!--이때, 자신이 사용할 이름으로 반드시 id 바꿔줄것(하단 스크립트 포함)-->
+                            <!--id를 바꾸지 않으면 새 스크립트를 쓰든말든 기존의 양식과 똑같이 실행돼버림-->
+                            <button class="btn btn-primary m-2" id="alertStart">Alert 실행</button>
+                            <button class="btn btn-gray m-2" id="confirmStart">Confirm 실행</button>
+                            <button class="btn btn-success m-2" id="promptStart">Prompt 실행</button>
+                            <button class="btn btn-danger m-2" id="toastStart">Toast 실행</button>
+                            <button class="btn btn-warning m-2" id="ajaxStart">Ajax 실행 (깃헙 아이디 검색)</button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!--스크립트 영역-->
+            <!--추가할 스크립트가 있다면 이곳에서 <script>태그 열고 작업-->
+            <!--기존 config 파일과 겹칠 수 있으므로 class나 id는 직접 작명해주세요-->
+
+
+            <!--푸터-->
+            <!--콘텐츠 내부에 포함된 형식이므로 첨삭 엄금!!!-->
+            <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+        </div>
+    </body>
+</html>

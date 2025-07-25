@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+
+    <style>
+        .fixed-bg {
+            background-color: white !important;
+            vertical-align: middle !important;
+            pointer-events: none !important; /* 마우스 이벤트 무시 */
+
+
+        }
+
+        .table-hover tbody tr:hover td:not(.fixed-bg) {
+            background-color: #f5f5f5; /* 원하는 hover 색상 */
+        }
+    </style>
+    <title>델리나잇</title>
+
+    <!--별도 css 필요할 시 아래로 추가-->
+    <!--어디서 그대로 가져오는거 아니면 클래스 이름 잘 붙여주고
+    styles.css에 작성할것-->
+</head>
+
+<body>
+<!--이 줄 div layout:fragment명과 id명 절대 수정 금지!!!!-->
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <!--작업 영역-->
+            <!--반드시 이 안에서만 작업-->
+
+            <!--페이지 제목 명명-->
+            <h3 class="mt-5">관리자 홈</h3>
+            <ol class="breadcrumb mb-4">
+                <!--페이지 소제목 명명-->
+                <a href="#" class="breadcrumb-item active no-click" th:text="'환영합니다, '+${member.name}+' 님'"></a>
+            </ol>
+
+            <!--기본 카드 양식-->
+            <div class="d-flex gap-3" style="margin-bottom: -0.5rem;">
+                <div class="card custom-shadow mb-4 card-flex-50" style="height: 300px; ">
+                    <div class="card-header">미승인 주문건</div>
+                    <div class="card-body" style="padding-top: 10px; overflow-y: auto ">
+                        <table class="table table-hover"
+                               style="font-size:14px;width: 90%; height: auto; margin: auto; ">
+                            <thead>
+                            <th>#</th>
+                            <th>주문 시간</th>
+                            <th>확인하기</th>
+                            </thead>
+                            <tbody class="ordersTable">
+                            </tbody>
+                        </table>
+
+
+                    </div>
+                </div>
+
+                <div class="card custom-shadow mb-4 card-flex-50" style="height: 300px;">
+                    <div class="card-header">5월 고객 만족도 평가</div>
+
+                    <div class="card-body" style="padding-top: 10px">
+                        <table class="table table-striped" style="width: 90%; margin: auto;font-size: 14px; ">
+                            <colgroup>
+                                <col style="width: 30%;">
+                                <col style="width: 30%;">
+                                <col style="width: 40%;">
+                            </colgroup>
+                            <thead>
+                            <tr>
+                                <th>문항</th>
+                                <th>점수</th>
+                                <th>총점</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>1번 문항</td>
+                                <td id="firstQuestion"></td>
+                                <td rowspan="5" id="avgScore" class="fixed-bg">총점 평균 : 70점</td>
+                            </tr>
+                            <tr>
+                                <td>2번 문항</td>
+                                <td id="secondQuestion"></td>
+                            </tr>
+                            <tr>
+                                <td>3번 문항</td>
+                                <td id="thirdQuestion"></td>
+                            </tr>
+                            <tr>
+                                <td>4번 문항</td>
+                                <td id="fourthQuestion"></td>
+                            </tr>
+                            <tr>
+                                <td>5번 문항</td>
+                                <td id="fifthQuestion"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card custom-shadow mb-4" style="height: 350px;">
+                <div class="card-header">5월 정산</div>
+                <div class="card-body row">
+                    <div class="col-8">
+                        <canvas id="dynamicChart" style="width:100%;  height:250px !important;"></canvas>
+                    </div>
+                    <div class="col-4 " style="height: 250px; overflow-y: auto">
+                        <table class="table table-hover">
+                            <thead>
+                            <th>메뉴 명</th>
+                            <th>총 매출</th>
+                            </thead>
+                            <tbody class="settlementTable">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+
+
+        $(function () {
+            let paymentData = []
+            let orderData = []
+            let menuData = []
+            let storeData = []
+            let hotelData = []
+            let chartInstance = null
+
+
+            settingNPSData()
+            showSettlement()
+            showInquire()
+
+            function showSettlement() {
+                let today = new Date()
+                let startDate = new Date(today.getFullYear(), today.getMonth(), 2)
+                let endDate = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+                let format = (d) => d.toISOString().split('T')[0]
+
+                loadPaymentData(format(startDate), format(endDate))
+
+            }
+
+
+            function loadPaymentData(startDate, endDate) {
+                let data = {
+                    startDate: startDate,
+                    endDate: endDate,
+                    paidCheck: "both",
+                    download: false
+                }
+                $.ajax({
+                    url: '/api/payment/totalPrice',
+                    method: 'get',
+                    data: data,
+                    success: function (response) {
+                        if (response === undefined) {
+                            alert("해당 날짜 및 조건에 존재하는 주문건이 없습니다.")
+                            return
+                        }
+
+
+                        console.log('결제 데이터 로드 성공', response)
+                        paymentData = response
+                        orderData = response
+                        menuData = response
+                        handleFetchedData(response)
+                        createChart('menu')
+
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("조회 실패:", status, error, xhr.responseText)
+                    }
+                })
+            }
+
+            function handleFetchedData(response) {
+                console.log("데이터 처리 시작");
+                let menuList = [];
+                let storeMap = new Map();
+                let hotelMap = new Map();
+
+                response.forEach(payment => {
+                    if (payment.ordersDTOList && Array.isArray(payment.ordersDTOList)) {
+                        payment.ordersDTOList.forEach(order => {
+                            // 메뉴별 데이터 처리 (기존과 동일)
+                            if (order.ordersItemDTOList && Array.isArray(order.ordersItemDTOList)) {
+                                order.ordersItemDTOList.forEach(item => {
+                                    const menuName = item.menuDTO ? item.menuDTO.name : '-';
+                                    const menuPrice = item.menuDTO ? item.menuDTO.price : 0;
+                                    const quantity = item.quantity || 0;
+                                    const totalPrice = menuPrice * quantity;
+
+                                    const existingMenuItem = menuList.find(m => m.menuName === menuName);
+                                    if (!existingMenuItem) {
+                                        menuList.push({menuName, menuPrice, quantity, totalPrice});
+                                    } else {
+                                        existingMenuItem.quantity += quantity;
+                                        existingMenuItem.totalPrice += totalPrice;
+                                    }
+                                });
+                            }
+
+                            // 스토어별 데이터 처리 (주문 건수 포함)
+                            if (order.storeDTO) {
+                                const storeName = order.storeDTO.name || '-';
+                                const totalPrice = order.totalPrice || 0;
+
+                                if (storeMap.has(storeName)) {
+                                    const existingStore = storeMap.get(storeName);
+                                    storeMap.set(storeName, {
+                                        name: storeName,
+                                        orderCount: existingStore.orderCount + 1,
+                                        totalPrice: existingStore.totalPrice + totalPrice
+                                    });
+                                } else {
+                                    storeMap.set(storeName, {name: storeName, orderCount: 1, totalPrice});
+                                }
+                            }
+
+                            // 호텔별 데이터 처리 (주문 건수 포함)
+                            if (order.storeDTO && order.storeDTO.hotelDTO) {
+                                const hotelName = order.storeDTO.hotelDTO.name || '-';
+                                const totalPrice = order.totalPrice || 0;
+
+                                if (hotelMap.has(hotelName)) {
+                                    const existingHotel = hotelMap.get(hotelName);
+                                    hotelMap.set(hotelName, {
+                                        name: hotelName,
+                                        orderCount: existingHotel.orderCount + 1,
+                                        totalPrice: existingHotel.totalPrice + totalPrice
+                                    });
+                                } else {
+                                    hotelMap.set(hotelName, {name: hotelName, orderCount: 1, totalPrice});
+                                }
+                            }
+                        });
+                    }
+                });
+
+                console.log("menuList:", menuList);
+                console.log("storeMap:", storeMap);
+                console.log("hotelMap:", hotelMap);
+
+                menuData = menuList;
+                storeData = Array.from(storeMap.values());
+                hotelData = Array.from(hotelMap.values());
+
+            }
+
+            function getChartData(chartType) {
+                let labels = []
+                let data = []
+                switch (chartType) {
+                    case 'hotel':
+                        hotelData.forEach(function (hotel) {
+                            labels.push(hotel.name)
+                            data.push(hotel.totalPrice)
+                        })
+                        break
+                    case 'store':
+                        storeData.forEach(function (store) {
+                            labels.push(store.name)
+                            data.push(store.totalPrice)
+                        })
+                        break
+                    case 'menu':
+                        menuData.forEach(function (item) {
+                            labels.push(item.menuName)  // 메뉴 이름
+                            data.push(item.totalPrice)  // 총 가격
+                        })
+                        break
+                }
+
+                console.log('차트 데이터:', {labels: labels, data: data})
+                return {labels: labels, data: data}
+            }
+
+            function createChart(chartType) {
+                let chartData = getChartData(chartType)
+                let str = "";
+
+                for (let i = 0; i < chartData.labels.length; i++) {
+                    str += "<tr>";
+                    str += "<td>" + chartData.labels[i] + "</td>";
+                    str += "<td>" + chartData.data[i] + "</td>";
+                    str += "</tr>";
+                }
+
+                $(".settlementTable").html(str);
+
+                let ctx = document.getElementById('dynamicChart').getContext('2d')
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+                console.log(chartData)
+
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: chartData.labels,
+                        datasets: [{
+                            label: chartType === 'payment' ? '결제 금액' : chartType === 'order' ? '주문 금액' : '메뉴 금액',
+                            data: chartData.data,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: false,
+                        maintainAspectRatio: false, // (선택) 비율 고정 원하지 않을 경우
+
+                        legend: {
+                            display: false
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                beginAtZero: true,    // 0부터 시작
+                                min: 0,
+                                ticks: {
+                                    stepSize: 10000,
+
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+
+
+            function settingNPSData() {
+
+                $.ajax({
+                    url: '/api/nps/dashboard',
+                    type: 'get',
+                    success: function (data) {
+                        $("#firstQuestion").html(data[0] + "점")
+                        $("#secondQuestion").html(data[1] + "점")
+                        $("#thirdQuestion").html(data[2] + "점")
+                        $("#fourthQuestion").html(data[3] + "점")
+                        $("#fifthQuestion").html(data[4] + "점")
+                        $("#avgScore").html("총점 평균 : " + data[5] + "점")
+
+                    },
+                    error: function () {
+                        alert("고객 만족도 평가 세팅 시 오류 발생")
+                    }
+                })
+
+            }
+
+            function showInquire() {
+                $.ajax({
+                    url: '/store/dashboard',
+                    type: 'get',
+                    success: function (data) {
+                        console.log(data)
+                        let str = ""
+                        data.forEach(function (dataOne) {
+                            if (dataOne !== null) {
+                                let regTime = new Date(dataOne.pendingTime);
+                                let formattedTime = regTime.toLocaleString('ko-KR', {
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: false,
+                                });
+                                str += "<tr><td>" + dataOne.id + "</td><td>" + formattedTime + "</td><td><a href='/members/store/orders/list'>이동</a></td></tr>"
+                            }
+                        })
+                        $(".ordersTable").html(str);
+                    },
+                    error: function () {
+                        alert("고객 만족도 평가 세팅 시 오류 발생")
+                    }
+                })
+            }
+        })
+
+    </script>
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

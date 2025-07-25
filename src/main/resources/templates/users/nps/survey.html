@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+    <title>고객 만족도 설문조사</title>
+    <style>
+        body {
+            font-family: "Roboto", sans-serif;
+            background: #f1f3f4;
+            padding: 30px;
+        }
+
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #202124;
+        }
+
+        .survey-section {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            display: none;
+            max-width: 600px; /* 카드 너비를 줄임 */
+            margin: 0 auto; /* 중앙 정렬 */
+        }
+
+        .survey-section h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .question-block {
+            margin-bottom: 25px;
+        }
+
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #444;
+        }
+
+        .radio-group label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        .survey-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px; /* 카드 간 간격을 줄임 */
+            padding: 15px;
+            background: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .survey-card h4 {
+            font-size: 0.9rem; /* 폰트 크기를 줄임 */
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .survey-card .radio-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .radio-group input {
+            margin-right: 5px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            resize: none;  /* 크기 조정 핸들 제거 */
+            overflow: hidden; /* 텍스트가 영역을 벗어나지 않도록 설정 */
+        }
+
+        .saveSurveyBtn, .nextBtn {
+            display: block;
+            margin: 20px auto; /* 버튼 간격 조정 */
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 25px; /* 버튼 크기 줄임 */
+            font-size: 1em; /* 폰트 크기 줄임 */
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .saveSurveyBtn:hover, .nextBtn:hover {
+            background-color: #1669c1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .modal-content p:first-child {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .nextBtn {
+            display: block;
+            margin: 30px auto;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .nextBtn:hover {
+            background-color: #1669c1;
+        }
+    </style>
+</head>
+<body>
+
+<h2>고객 만족도 평가</h2>
+
+<div class="hotelNPSWrap"></div>
+
+<div th:if="${storeDTOList != null and !storeDTOList.isEmpty()}">
+    <div class="storeNPSWrap"></div>
+</div>
+
+
+<button class="saveSurveyBtn" style="display: none;">제출</button>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <p><strong>소중한 의견을 보내주셔서 감사합니다!</strong></p>
+        <p>설문이 정상적으로 제출되었습니다.</p>
+        <p>여러분의 의견은 더 나은 서비스를 만드는 데 큰 도움이 됩니다.</p>
+        <p>즐거운 하루 되세요 :)</p>
+    </div>
+</div>
+
+<script th:inline="javascript">
+
+    $(document).ready(function () {
+        let checkOutId = [[${checkOutId}]]
+        let storeDTOList = [[${storeDTOList}]]
+        let hotelId = [[${hotelId}]]
+        let hotelName = [[${hotelName}]]
+        let hotelOnly = [[${hotelOnly}]]
+
+        console.log(checkOutId)
+        console.log(storeDTOList)
+        console.log(hotelId)
+        console.log(hotelName)
+
+        function checkEmptyOrder() {
+            if(storeDTOList===null){
+                $(".nextBtn").text("제출");
+                $(".nextBtn").removeClass("nextBtn").addClass("saveSurveyBtn");
+            }
+        }
+
+        // 호텔 이름을 화면에 표시
+        $(".hotelNPSWrap").prepend(`<h3>${hotelName} 설문</h3>`)
+
+        // 호텔 설문 질문
+        let hotelQuestions = [
+            '고객님께서 이용하신 객실의 청결 상태(침구, 욕실, 바닥 등)는 전반적으로 얼마나 만족스러웠나요?',
+            '호텔 직원들의 응대 태도와 서비스는 고객님께 충분한 만족감을 드렸다고 느끼셨나요?',
+            '숙박 요금은 제공된 서비스 및 시설 수준에 비추어 적절하다고 생각하시나요?',
+            '헬스장, 수영장, 레스토랑 등 부대시설의 이용 편의성과 품질은 기대에 부합했나요?',
+            '고객님께서 이번 숙박 전반에 대해 얼마나 만족하셨는지 평가 부탁드립니다.'
+        ]
+
+        // 스토어 설문 질문
+        let storeQuestions = [
+            '매장에서 구매하신 상품의 품질(신선도, 상태, 내구성 등)은 기대에 부응했나요?',
+            '스토어 직원들의 응대 태도 및 친절함은 고객님의 쇼핑 경험에 긍정적인 영향을 주었나요?',
+            '매장 내부의 청결 상태와 정돈 상태(진열, 바닥, 화장실 등)는 어떠했는지 평가해 주세요.',
+            '상품 가격이 품질이나 서비스 수준에 비추어 합리적이라고 느끼셨나요?',
+            '이번 매장에서의 전반적인 쇼핑 경험에 대해 얼마나 만족하셨는지 평가해 주세요.'
+        ]
+
+        // 설문 공통 HTML 생성 함수
+        function generateQuestionBlock(prefix, id, labelPrefix, questionArray) {
+
+            let html = `<div class="survey-section" data-id="${id}" style="display: none;"><h3>${labelPrefix}</h3>`
+
+            questionArray.forEach((question, i) => {
+                html += `<div class="survey-card">
+                            <h4>${question}</h4>
+                            <div class="radio-group">`
+
+                // 1~5 대신 텍스트를 사용하여 라디오 버튼 생성
+                for (let j = 0; j < 5; j++) {
+                    html += `<label>
+                                <input type="radio" name="${prefix}[${i}][${id}]" value="${j + 1}"> ${['매우 나쁨', '나쁨', '보통', '좋음', '매우 좋음'][j]}
+                             </label>`
+                }
+
+                html += `</div></div>`
+            })
+
+            // 기타 문의사항 입력란
+            html += `<div class="survey-card">
+                        <h4>기타 문의사항</h4>
+                        <textarea name="${prefix}_etc_${id}" rows="4" placeholder="의견을 작성해주세요."></textarea>
+                     </div>
+                     <button class="nextBtn">다음</button>
+                     </div>`
+
+            return html
+        }
+
+        // 호텔 설문 생성
+        let hotelHtml = generateQuestionBlock("hotel", hotelId, hotelName, hotelQuestions)
+        $(".hotelNPSWrap").html(hotelHtml)
+
+        if(storeDTOList!==null){
+            // 스토어 설문 생성
+            let storeHtml = ""
+            storeDTOList.forEach(store => {
+                storeHtml += generateQuestionBlock("store", store.id, store.name, storeQuestions)
+            })
+            $(".storeNPSWrap").html(storeHtml)
+        }
+
+
+        // 첫 번째 설문만 보여주기
+        $(".survey-section").first().show()
+
+        // 다음 버튼 클릭 함수
+        $(".nextBtn").click(function () {
+
+            let currentSurvey = $(this).closest(".survey-section")
+            let surveys = $(".survey-section")
+            let currentIndex = surveys.index(currentSurvey)
+
+            // 마지막 설문지라면 "다음" 버튼을 "제출" 버튼으로 변환
+            if (currentIndex === surveys.length - 1) {
+                $(this).text("제출")                                           // 버튼 텍스트를 "제출"로 변경
+                $(this).removeClass("nextBtn").addClass("saveSurveyBtn")      // 클래스 변경 (스타일 적용)
+            } else {
+                let nextSurvey = surveys.eq(currentIndex + 1)
+                currentSurvey.hide()
+                nextSurvey.show()
+            }
+        })
+
+        // 응답 수집 함수
+        function collectSurveyData(prefix, id, questionArray) {
+            let dto = {
+                checkOutId: checkOutId,
+                hotelOrStore: prefix,
+                id: id
+            }
+
+            if (prefix === 'hotel') {
+                dto.hotelId = hotelId
+            } else if (prefix === 'store') {
+                dto.storeId = id
+            }
+
+            let score = 0
+            let numQuestions = questionArray.length
+
+            questionArray.forEach((label, idx) => {
+
+                let rawVal = parseInt($(`input[name="${prefix}[${idx}][${id}]"]:checked`).val()) || 0
+                let val = rawVal * 20
+
+                switch (idx) {
+                    case 0: dto.questionOne = val; break
+                    case 1: dto.questionTwo = val; break
+                    case 2: dto.questionThree = val; break
+                    case 3: dto.questionFour = val; break
+                    case 4: dto.questionFive = val; break
+                }
+                score += val
+            })
+
+            dto.totalScore = Math.round(score / numQuestions)
+
+            // 수정된 부분: textarea 값 가져오기
+            let etcVal = $(`textarea[name="${prefix}_etc_${id}"]`).val() || ''  // name 속성으로 정확히 찾기
+            dto.etcQuestion = etcVal
+
+            return { dto }
+        }
+
+        // 제출 버튼 클릭 이벤트
+        $(document).on("click",".saveSurveyBtn",function () {
+            console.log("설문 제출 버튼 클릭")
+
+            let npsList = []
+
+            // 호텔 응답 수집
+            let hotelDTO = collectSurveyData("hotel", hotelId, hotelQuestions)
+            npsList.push(hotelDTO.dto)
+
+            // 스토어 응답 수집
+            $('.storeNPSWrap > div').each(function () {
+                let storeId = $(this).data('id');
+                let storeDTO = collectSurveyData("store", storeId, storeQuestions)
+                npsList.push(storeDTO.dto)
+            })
+
+            console.log("새롭게 만든 npsList: " + JSON.stringify(npsList))
+
+            $.ajax({
+                url: '/api/nps/saveSurvey',
+                type: 'post',
+                contentType: 'application/json',
+                data: JSON.stringify(npsList),
+                success: function (response) {
+                    $('#myModal').show();
+                    setTimeout(function () {
+                        $('#myModal').hide()
+                        window.close()
+                    }, 2500)
+                },
+                error: function (xhr) {
+                    alert('설문 저장 실패 : ' + xhr.responseText)
+                }
+            })
+        })
+        checkEmptyOrder()
+    })
+
+</script>
+
+
+</body>
+</html>

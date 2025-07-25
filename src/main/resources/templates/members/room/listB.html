@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>등록된 룸 목록</h3>
+                    <ol class="breadcrumb mb-4">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">룸 관리</a>
+                    </ol>
+
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary modalregister float-end mb-3"
+                            data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        새 룸 +
+                    </button>
+
+                    <!--카드 제목-->
+                    <table class="table align-middle table-hover">
+
+                        <thead>
+                        <th scope="col">#</th>
+                        <th class="col-2">이름</th>
+                        <th scope="col">설명</th>
+                        <th scope="col">설명</th>
+                        <th scope="col">수정</th>
+                        <div class="col offset-8">
+
+                            <!-- 새 룸 등록 Modal -->
+                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <label class="col-form-label form-label ms-2">새 룸 등록</label>
+                                            <button type="button" class="btn btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <input type="text" class="form-control name" id="name" placeholder="룸명(호수)">
+                                            </div>
+                                            <div>
+                                                <textarea type="text" class="form-control content" id="content" placeholder="설명"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary room_registerbtn">저장</button>
+                                            <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 룸 수정 Modal -->
+                            <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <label class="col-form-label form-label ms-2" id="exampleModalLabel2">룸 정보 수정</label>
+                                            <button type="button" class="btn btn-close btn-primary" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <input type="text" class="form-control name" id="name2" placeholder="룸명(호수)">
+                                            </div>
+                                            <div>
+                                                <textarea type="text" class="form-control content" id="content2" placeholder="설명"></textarea>
+                                            </div>
+                                            <div id="hiddenId" data-id=""></div>
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary" id="room_modifybtn">저장</button>
+                                            <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </thead>
+
+                        <tbody>
+                        <th:block  th:each="list,stat:${roomDTOList}">
+                            <tr>
+                                <th scope="row offset-4" th:text="${list.id}" hidden="hidden"></th>
+                                <th scope="row" th:text="${stat.count}"></th>
+                                <td th:text="${list.name}" th:data-num="${list.id}"></td>
+                                <td th:text="${list.content}"></td>
+                                <td th:text="${list.hotelDTO.name}"></td>
+                                <td>
+                                    <a class="btn btn-outline-success modalmodify me-2" th:data-id="${list.id}" data-bs-toggle="modal" id="ubtn" data-bs-target="#exampleModal2"  th:value="${list.id}"><i class="fa-solid fa-pen hoverBtn text-success"></i></a>
+                                    <a class="btn btn-outline-danger"  th:data-id="${list.id}" id="dbtn"><i class="fa-solid fa-trash hoverBtn text-danger"></i></a>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        $(function () {
+            $(document).on("click",".room_registerbtn", function () {
+                let name = $("#name").val()
+                let content = $("#content").val()
+
+                if (!name || !content) {
+                    alert("방 이름과 설명을 모두 입력해야 합니다.")
+                    return ;
+                }
+                let roomDTO = {
+                    name: name,
+                    content: content,
+                }
+
+                $.ajax({
+                    url: "/room/rest/register",
+                    method: "post",
+                    data: roomDTO,
+                    success: function (data) {
+                        $("#exampleModal").modal("hide");
+                        location.reload();
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        alert("방등록 실패")
+                    },
+                })
+            });
+
+            $(document).on("click", "#ubtn", function () {
+                let id = $(this).attr("data-id");
+                $("#hiddenId").attr("data-id", id);
+
+                // 클릭한 tr의 방이름과 설명 추출
+                let $tr = $(this).closest("tr");
+                let name = $tr.find("td").eq(0).text();
+                let content = $tr.find("td").eq(1).text();
+
+                // 모달 input에 값 넣어주기
+                $("#name2").val(name.trim());
+                $("#content2").val(content.trim());
+            });
+            $(document).on("click", "#room_modifybtn", function () {
+                let id = $("#hiddenId").attr("data-id");
+                let name = $("#name2").val();
+                let content = $("#content2").val();
+
+                let roomDTO = {
+                    id : id,
+                    name : name,
+                    content : content
+                };
+
+                $.ajax({
+                    url: "/room/rest/modify",
+                    method: "post",
+                    data: roomDTO,
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function () {
+                    },
+                })
+            });
+
+            $(document).on("click", "#dbtn", function () {
+                let id = $(this).attr("data-id");
+                if (!confirm("정말로 삭제하시겠습니까?")) {
+                    return;
+                }
+                $.ajax({
+                    url: "/room/rest/del",
+                    method: "delete",
+                    data: {id: id},
+                    success: function () {
+                        location.reload();
+                    },
+                    error: function (xhr) {
+                        alert("삭제불가 ❌. 현재 체크인 상태인 방입니다.")
+                    },
+                });
+            });
+        });
+
+
+        // room_registerbtn.on("click", function () {
+        //     let name = $("#name").val()
+        //     let content = $("#content").val()
+        //
+        //
+        //     let roomDTO = {
+        //         name: name,
+        //         content: content
+        //     }
+        //     console.log(roomDTO)
+        //
+        //     $.ajax({
+        //         url: "/room/rest/register",
+        //         method: "post",
+        //         data: roomDTO,
+        //         success: function (data) {
+        //             modal.modal("hide");
+        //             location.reload();
+        //         },
+        //     })
+        // });
+    </script>
+
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

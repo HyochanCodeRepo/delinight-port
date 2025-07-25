@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+
+    <style>
+        .radiusRoom {
+            background-color: gray;
+            border: none;
+            color: white;
+        }
+        /*.radiusRoom span {color: white}*/
+    </style>
+</head>
+<body>
+
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>문의사항 목록</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/common/hotelAdHome" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">고객 서비스</a>
+                    </ol>
+
+                    <table class="table align-middle table-hover mb-5">
+                        <thead>
+                        <tr>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 12%;">문의시간</th>
+                            <th style="width: 11%;">유형</th>
+                            <th style="width: 20%;">제목</th>
+                            <th style="width: 37%;">내용</th>
+                            <th>답변시간</th>
+                        </tr>
+                        </thead>
+                        <th:block th:each="inquireDTO: ${inquireDTOList}">
+                            <tr>
+                                <td th:text="${inquireDTO.id}"></td>
+                                <td th:text="${#temporals.format(inquireDTO.regTime,'yyyy-MM-dd HH:mm')}"></td>
+                                <td>
+                                    <div class="radiusRoom">
+                                        <span th:if="${inquireDTO.inquireType == T(com.onetouch.delinight.Constant.InquireType).ROOMSERVICE}">룸서비스</span>
+                                        <span th:if="${inquireDTO.inquireType == T(com.onetouch.delinight.Constant.InquireType).ROOMCARE}">룸케어</span>
+                                        <span th:if="${inquireDTO.inquireType == T(com.onetouch.delinight.Constant.InquireType).OTHERINQUIRIES}">기타문의</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a class="alink-title table-title" th:href="@{/members/inquire/read(id=${inquireDTO.id})}">
+                                        [[${inquireDTO.title}]]
+                                    </a>
+                                </td>
+                                <td class="table-content" th:text="${inquireDTO.content}"></td>
+                                <td>
+                                    <span th:if="${inquireDTO.responseTime == null}" class="text-danger">답변대기중</span>
+                                    <span th:if="${inquireDTO.responseTime != null}"
+                                          th:text="${#temporals.format(inquireDTO.responseTime,'yyyy-MM-dd HH:mm')}"></span>
+                                </td>
+                            </tr>
+                        </th:block>
+                    </table>
+
+                    <!--페이지네이션-->
+                    <ul class="pagination justify-content-center">
+                        <!-- 처음 페이지 버튼 -->
+                        <li class="page-menu" th:classappend="${inquireDTOList.number == 0} ? 'disabled'">
+                            <a class="page-link" th:href="@{/members/inquire/list?page=0}">처음</a>
+                        </li>
+
+                        <!-- 이전 페이지 버튼 -->
+                        <li class="page-menu" th:classappend="${!inquireDTOList.hasPrevious()} ? 'disabled'">
+                            <a class="page-link" th:href="@{/members/inquire/list?page={prev}(prev=${inquireDTOList.number - 1})}">이전</a>
+                        </li>
+
+                        <!-- 현재 페이지 기준 앞 4개, 뒤 5개 -->
+                        <li class="page-menu"
+                            th:each="pageNum : ${#numbers.sequence(
+                                (inquireDTOList.number - 4 > 0 ? inquireDTOList.number - 4 : 0),
+                                (inquireDTOList.number + 5 < inquireDTOList.totalPages - 1 ? inquireDTOList.number + 5 : inquireDTOList.totalPages - 1)
+                                )}"
+                            th:classappend="${pageNum == inquireDTOList.number} ? 'active'">
+                            <a class="page-link" th:href="@{/members/inquire/list?page={p}(p=${pageNum})}" th:text="${pageNum + 1}"></a>
+                        </li>
+
+                        <!-- 다음 페이지 버튼 -->
+                        <li class="page-menu" th:classappend="${!inquireDTOList.hasNext()} ? 'disabled'">
+                            <a class="page-link" th:href="@{/members/inquire/list?page={next}(next=${inquireDTOList.number + 1})}">다음</a>
+                        </li>
+
+                        <!-- 마지막 페이지 버튼 -->
+                        <li class="page-menu" th:classappend="${inquireDTOList.number == inquireDTOList.totalPages - 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/members/inquire/list?page={last}(last=${inquireDTOList.totalPages - 1})}">마지막</a>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!--스크립트 영역-->
+    <!--추가할 스크립트가 있다면 이곳에서 <script>태그 열고 작업-->
+
+    <script>
+        <!--문의사항 리스트 보기 제한-->
+        document.addEventListener("DOMContentLoaded", function () {
+
+            //제목 글자수 제한
+            document.querySelectorAll('.table-title').forEach(function (el) {
+                const maxLength = 15;
+                const originalText = el.textContent.trim();
+                if (originalText.length > maxLength) {
+                    el.textContent = originalText.slice(0, maxLength) + '...';
+                }
+            });
+
+            //내용 글자수 제한
+            document.querySelectorAll('.table-content').forEach(function (el) {
+                const maxLength = 36;
+                const originalText = el.textContent.trim();
+                if (originalText.length > maxLength) {
+                    el.textContent = originalText.slice(0, maxLength) + '...';
+                }
+            });
+        });
+    </script>
+
+    <!--푸터-->
+    <!--콘텐츠 내부에 포함된 형식이므로 첨삭 엄금!!!-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+
+</body>
+</html>

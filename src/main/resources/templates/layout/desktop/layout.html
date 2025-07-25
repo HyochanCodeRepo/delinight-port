@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://ultraq.net.nz/thymeleaf/layout"
+>
+<head>
+    <title>레이아웃</title>
+    <!--config head-->
+    <th:block th:replace="~{fragments/desktop/config :: configMetaTags}"></th:block>
+    <th:block th:replace="~{fragments/desktop/config :: configStyles}"></th:block>
+    <th:block th:replace="~{fragments/desktop/config :: configScripts}"></th:block>
+</head>
+
+<body class="sb-nav-fixed">
+
+<!-- 헤더 -->
+<div th:replace="~{fragments/desktop/adminheader::adminHeader}"></div>
+
+<!--사이드바&콘텐츠&푸터-->
+<div id="layoutSidenav">
+
+    <!--사이드바-->
+    <div th:replace="~{fragments/desktop/adminsidebar::adminSidebar}" id="layoutSidenav_nav"></div>
+
+    <!--콘텐츠-->
+    <div layout:fragment="adminContent"></div>
+
+    <div layout:fragment="pagescript"></div>
+</div>
+
+
+<!-- 위로가기 a태그 -->
+<a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
+        class="bi bi-arrow-up-short"></i></a>
+
+<!--config script-->
+<th:block th:replace="~{fragments/desktop/config::script}"></th:block>
+</body>
+</html>

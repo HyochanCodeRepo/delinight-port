@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>새 본사 등록</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/home" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">본사 관리</a>
+                    </ol>
+
+                    <form action="/members/center/create" th:field="${centerDTO}" method="post" enctype="multipart/form-data">
+                        <div class="centerFormData"></div>
+                        <div class="col-6">
+                                <div class="row mb-3">
+                                    <label for="name" class="col-sm-3 col-form-label form-label">본사명</label>
+                                    <div class="col-sm-8">
+                                        <input type="text" class="form-control" id="name" name="name">
+                                        <div class="text-sm mt-1 text-danger" th:if="${nameError != null}" th:text="${nameError}"></div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label for="content" class="col-sm-3 col-form-label form-label">설명</label>
+                                    <div class="col-sm-8">
+                                        <textarea type="text" class="form-control" id="content" name="content"></textarea>
+                                        <div class="text-sm mt-1 text-danger" th:if="${contentError != null}" th:text="${contentError}"></div>
+                                    </div>
+                                </div>
+                        </div>
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-primary">등록</button>
+                            <a href="/members/center/list" class="btn btn-gray">취소</a>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+
+
+
+            <script type="text/javascript" src="/js/imgscript.js"></script>
+            <script th:inline="javascript">
+
+                $(document).on("click", ".addMembers", function () {
+                    let membersId = $(this).data("membersid")
+                    $(".centerFormData").empty();
+                    $(".centerFormData").append("<input type='hidden' name='membersId' value='" + membersId + "'>")
+                    Swal.fire({
+                        icon: 'success',
+                        title: '추가 완료',
+                        text: '본사 관리자가 추가 되었습니다.',
+                    });
+                })
+                $(".search__btn").on("click", function () {
+                    $(".tBody").empty();
+                    let email = $(".search").val()
+                    $.ajax({
+                        type: "get",
+                        url: "/rest/searchMembers",
+                        data: {"email": email},
+                        success: function (result) {
+                            if (result.email !== "ghost") {
+                                let str = "<tr><td class='me-5'>" + result.email + "</td><td><button class='addMembers btn btn-outline-primary text-center' type='button' data-membersid='" + result.id + "'>등록 +</button></td></tr>"
+                                $(".tBody").html(str)
+                            }
+
+                        }
+
+                    })
+                })
+            </script>
+
+
+        </div>
+    </main>
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+
+
+</div>
+
+</body>
+</html>

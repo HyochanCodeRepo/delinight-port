@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mt-5 mb-4">
+                <div class="card-body">
+                    <h3>메뉴 정보 수정</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="/members/menu/list" class="breadcrumb-item active">메뉴 목록</a>
+                    </ol>
+
+                    <form action="/members/menu/update" method="post" enctype="multipart/form-data" th:object="${menuDTO}" >
+
+                        <div class="d-flex">
+
+                            <div class="w-50">
+                                <input hidden readonly name="id" th:value="${menuDTO.id}">
+                                <div class="hiddenImgNum"></div>
+
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label form-label" for="inputGroupSelect02">카테고리</label>
+                                    <div class="col-sm-3">
+                                        <select th:field="*{menu}" class="form-select" id="inputGroupSelect02" name="menu">
+                                            <option value="KOREAN" selected>한식</option>
+                                            <option value="WESTERN">양식</option>
+                                            <option value="CHINESE">중식</option>
+                                            <option value="JAPANESE">일식</option>
+                                            <option value="DESSERT">카페</option>
+                                            <option value="BEVERAGE">음료</option>
+                                            <option value="ETC">기타</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-sm-3 col-form-label form-label" for="inputGroupSelect01">판매상태</label>
+                                    <div class="col-sm-3">
+                                        <select th:field="*{menuStatus}" class="form-select" id="inputGroupSelect01"
+                                                name="menuStatus">
+                                            <option value="SELL" selected>판매중</option>
+                                            <option value="SOLD_OUT">품절</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label for="name" class="col-sm-3 col-form-label form-label">메뉴명</label>
+                                    <div class="col-sm-6">
+                                        <input type="text"  class="form-control" id="name" th:field="*{name}">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label for="content" class="col-sm-3 col-form-label form-label">메뉴정보</label>
+                                    <div class="col-sm-8">
+                                        <textarea type="text" class="form-control" id="content" th:field="*{content}"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label for="price" class="col-sm-3 col-form-label form-label">가격</label>
+                                    <div class="col-sm-6">
+                                        <input type="text"  class="form-control" id="price" th:field="*{price}">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-5">
+                                    <label class="col-sm-3 col-form-label form-label">메뉴 이미지</label>
+                                    <div class="col-sm-8">
+                                        <label for="formFileLg">
+                                            <input name="image" class="form-control image imgInput" id="formFileLg" type="file">
+                                        </label>
+                                        <div class="text-sm mt-1">
+                                            정사각형 이미지로 넣어주세요.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-50">
+                                <img class="menuImg" th:src="${imgUrl}">
+                            </div>
+                        </div>
+                        <div class="mt-5 text-center">
+                            <button type="submit" class="btn btn-primary">저장</button>
+                            <a th:href="@{/members/menu/list(id=${menuDTO.id})}" class="btn btn-gray">취소</a>
+                        </div>
+                    </form>
+
+                    <script type="text/javascript" src="/js/imgscript.js"></script>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

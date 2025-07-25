@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div style="max-width:600px; margin:0 auto; font-family:'Noto Sans', sans-serif; background-color:#ffffff; border:1px solid #ddd; padding:30px; border-radius:8px;">
+  <h2 style="color:#2c3e50; text-align:center;">[[${subject}]]</h2>
+
+  <p style="font-size:16px; color:#333; line-height:1.6; margin-top:24px;">
+    <strong>[[${name}]]</strong> 고객님,
+    <br>
+    저희 호텔을 찾아주셔서 진심으로 감사드리며, 체크인 및 체크아웃 일정을 아래와 같이 안내드립니다.
+  </p>
+
+  <div style="margin:20px 0; padding:16px; background-color:#f9f9f9; border-left:4px solid #3498db;">
+    <p style="margin:0; font-size:15px; color:#2c3e50;">
+      ✅ <strong>체크인</strong> : <span style="color:#34495e;">[[${checkInDate}]] 15:00</span><br>
+      ✅ <strong>체크아웃</strong> : <span style="color:#34495e;">[[${checkOutDate}]] 1:00</span>
+    </p>
+  </div>
+
+  <p style="font-size:15px; color:#333; line-height:1.6;">
+    호텔을 이용하시는 동안 다음 서비스를 편리하게 이용하실 수 있습니다:
+  </p>
+  <ul style="font-size:15px; color:#2c3e50; line-height:1.8; padding-left:20px;">
+    <li>룸서비스 (음식 주문하기)</li>
+    <li>룸케어 서비스</li>
+    <li>호텔 문의</li>
+  </ul>
+
+  <p style="font-size:15px; color:#333;">
+    아래 링크를 클릭하거나 호텔 객실에 비치된 QR코드를 스캔하시면 로그인 후 바로 이용하실 수 있습니다.
+    <br><br>
+    👉 <a href="http://wooriproject.iptime.org:9003/users/login" style="color:#2980b9; text-decoration:none;">호텔 서비스 로그인하기</a>
+  </p>
+
+  <p style="font-size:15px; color:#333; margin-top:24px;">
+    <strong>주문 가능한 스토어 목록</strong>
+    <br>
+    <span style="color:#555;">[[${storeNames}]] </span>
+  </p>
+
+  <hr style="margin:30px 0; border:0; border-top:1px solid #ddd;">
+
+  <p style="font-size:14px; color:#777; text-align:center;">
+    [[${hotelName}]]을(를) 선택해주셔서 다시 한번 감사드리며,
+    고객님의 편안하고 즐거운 여행이 되시길 바랍니다.
+    <br><br>
+    ⓒ [[${hotelName}]]
+  </p>
+</div>
+
+</body>
+</html>

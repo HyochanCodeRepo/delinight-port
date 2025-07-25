@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <!--내용 넣는 곳-->
+        <div class="container-fluid px-5">
+            <!--텍스트 박스-->
+            <div class="card mb-4 mt-5">
+                <div class="card-body">
+                    <!--페이지 이름-->
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h3>등록된 룸케어 메뉴 목록</h3>
+                            <ol class="breadcrumb mb-5">
+                                <a href="/members/account/home" class="breadcrumb-item active">홈</a>
+                                <a href="#" class="breadcrumb-item active no-click">룸케어 메뉴 관리</a>
+                            </ol>
+                        </div>
+                        <div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-5 mb-2">
+                        <!--list 테이블-->
+                        <div class="w-50" style="height: 400px; overflow-y : auto">
+                            <table class="table align-middle">
+                                <thead>
+                                <th>#</th>
+                                <th>메뉴명</th>
+                                <th>설명</th>
+                                <th class="text-center">수정</th>
+
+                                </thead>
+                                <th:block th:each="menuDTO : ${list}">
+                                    <tr>
+                                        <td th:text="${menuDTO.id}"></td>
+                                        <td th:text="${menuDTO.name}">
+                                        </td>
+                                        <td th:text="${#strings.length(menuDTO.content) > 13 ? #strings.substring(menuDTO.content, 0, 13)+ '...' : menuDTO.content}"></td>
+
+                                        <td class="text-center">
+                                            <div class="btn btn-outline-success updateBtn"
+                                                 th:data-menuid="${menuDTO.id}">
+                                                <a><i class="fa-solid fa-pen hoverBtn" style="color: #198754"></i></a>
+                                            </div>
+                                            <div class="btn btn-outline-danger deleteBtn"
+                                                 th:data-menuid="${menuDTO.id}">
+                                                <a><i class="fa-solid fa-trash hoverBtn" style="color: #dc3545"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </th:block>
+                            </table>
+                        </div>
+                        <div class="w-50" style="margin-bottom: -60px">
+                            <div class="card mb-5">
+                                <div class="card-body contentSpace">
+                                    <h4 class="mb-5 contentSpaceTitle">새 메뉴 등록하기</h4>
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control registerName"
+                                               placeholder="메뉴명(예 : 수건, 룸청소 등등)">
+                                    </div>
+                                    <div class="mb-3">
+                                  <textarea type="text" class="form-control registerContent"
+                                            placeholder="메뉴 설명(예 : 최고급 40수 수건)"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <span class="col-form-label form-label">이미지 등록</span>
+                                    </div>
+                                    <div class="mb-3 d-flex justify-content-between">
+                                        <input type="file" class="form-control imgInput" style="flex-basis:70%">
+                                        <button type="button" class="btn-outline-primary btn imgView">확인</button>
+                                        <button type="button" class="btn-outline-danger btn imgDelete">삭제</button>
+                                    </div>
+                                    <div class="text-center" style="margin-bottom: -20px">
+                                        <button type="button" class="btn btn-outline-primary registerBtn">저장</button>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                </div>
+                <div id="customTooltip" style="position: absolute;background: rgba(0, 0, 0, 0.8);color: #fff;padding: 5px 8px;border-radius: 5px;font-size: 12px;pointer-events: none;display: none;z-index: 1000;
+"></div>
+
+                <div class="hiddenImgNum"></div>
+                <script type="text/javascript" src="/js/imgscript.js"></script>
+                <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+            </div>
+        </div>
+    </main>
+    <script th:inline="javascript">
+        $(function () {
+
+            let isUpdateMode = false; // 현재 모드 추적 변수
+
+            $(".imgView").on("click", function () {
+
+                if ($(".hiddenImgNum").find("input").length > 0) {
+                    Swal.fire({
+                        title: '메뉴 사진',
+                        html: "<img src='" + $(".imgFullUrl").val() + "' style='max-width:100%; height:auto; border-radius:8px;'>"
+                    })
+                } else {
+                    let menuId = $(".menuId").val()
+                    if (menuId !== undefined) {
+
+                        $.ajax({
+                            url: "/members/roomCare/menu/rest/imgRead/" + menuId,
+                            type: "get",
+                            success: function (result) {
+                                Swal.fire({
+                                    title: "이미지",
+                                    html: "<img src='" + result + "' style='max-width:100%; height:auto; border-radius:8px;'>"
+                                })
+                            },
+                            error: function (error) {
+                                Swal.fire({
+                                    title: error,
+                                    icon: 'warning'
+                                })
+                            }
+
+
+                        })
+                    }
+
+                }
+            })
+
+            $(".updateBtn").on("click", function () {
+                $(".hiddenImgNum").empty();
+                if (!isUpdateMode) {
+                    // 수정 모드로 전환
+                    $(".contentSpace").append("<input type='hidden' class='menuId' value='" + $(this).data("menuid") + "'>")
+
+                    $(".contentSpaceTitle").html("<span><img class='prevBtn' style='margin-right:5px;height: 27px' src='/img/arrow-left-square.svg'></span><span>수정하기</span>")
+                    $(".registerName").val($(this).closest("tr").find("td").eq(1).text().trim())
+                    $(".registerContent").val($(this).closest("tr").find("td").eq(2).text().trim())
+                    1
+
+                    isUpdateMode = true
+                } else if (isUpdateMode) {
+                    $(".menuId").remove()
+
+                    $(".contentSpace").append("<input type='hidden' class='menuId' value='" + $(this).data("menuid") + "'>")
+
+                    $(".contentSpaceTitle").html("<span><img class='prevBtn' style='margin-right:5px;height: 27px' src='/img/arrow-left-square.svg'></span><span>수정하기</span>")
+
+                    $(".registerName").val($(this).closest("tr").find("td").eq(1).text().trim())
+                    $(".registerContent").val($(this).closest("tr").find("td").eq(2).text().trim())
+
+                    isUpdateMode = true
+
+                } else {
+                    $(".menuId").remove()
+                    $(".contentSpaceTitle").html("등록하기")
+                    $(".registerName").val("")
+                    $(".registerContent").val("")
+
+                    isUpdateMode = false
+
+                }
+
+            })
+            $(document).on("click", ".prevBtn", function () {
+                window.location.reload()
+            })
+            $(".registerBtn").on("click", function () {
+
+                let name = $(".registerName").val();
+                let content = $(".registerContent").val();
+                let imgNum = $(".hiddenImgNum").find("input").eq(0).val();
+
+                if (isUpdateMode === true) {
+                    let id = $(".menuId").val();
+
+                    $.ajax({
+                        url: "/members/roomCare/menu/rest/update",
+                        type: "post",
+                        data: {
+                            imgNum: imgNum,
+                            id: id,
+                            name: name,
+                            content: content,
+                            hotelId: [[${hotelId}]]
+
+                        },
+                        success: function () {
+                            Swal.fire({
+
+                                title: '수정 완료',
+                                text: "메뉴 수정이 완료 되었습니다,",
+                                icon: 'info'
+
+                            })
+                            window.location.reload()
+                        },
+
+
+                    })
+                } else {
+
+                    $.ajax({
+                        url: "/members/roomCare/menu/rest/register",
+                        type: "post",
+                        data: {
+                            imgNum: imgNum,
+                            name: name,
+                            content: content,
+                            hotelId: [[${hotelId}]]
+
+                        },
+                        success: function () {
+                            window.location.reload()
+                        },
+                    })
+                }
+
+            })
+
+            $(".deleteBtn").on("click", function () {
+
+                let menuId = $(this).data("menuid")
+                Swal.fire({
+
+                    title: '해당 메뉴를 삭제 하시겠습니까?',
+                    text: "되돌리기가 불가함으로 재확인 부탁드립니다.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: '삭제',
+                    cancelButtonText: '취소',
+                    reverseButtons: false, // 버튼 순서 거꾸로
+
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire(
+                            '삭제가 완료되었습니다.',
+                        )
+                        $.ajax({
+
+                            url: "/members/roomCare/menu/rest/delete/" + menuId,
+                            type: "get",
+                            success: function () {
+                                window.location.reload();
+                            }
+
+                        })
+                    }
+                })
+
+            })
+            $(document).on("mouseenter", ".prevBtn", function (e) {
+                $("#customTooltip")
+                    .text("새 메뉴 등록하기로 돌아가기")
+                    .css({
+                        top: e.clientY + 10 + "px",   // 화면 기준 위치
+                        left: e.clientX + 10 + "px",
+                        display: "block"
+                    });
+            });
+
+            $(document).on("mousemove", ".prevBtn", function (e) {
+                $("#customTooltip").css({
+                    top: e.clientY + -120 + "px",
+                    left: e.clientX + -220 + "px"
+                });
+            });
+
+            $(document).on("mouseleave", ".prevBtn", function () {
+                $("#customTooltip").hide();
+            });
+
+        })
+
+
+    </script>
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

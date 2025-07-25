@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <style>
+        .container1 {
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            height: 35px;
+        }
+
+        .search {
+            max-width: 350px;
+            height: 100%;
+            outline: none;
+            font-size: 14px;
+            font-weight: 500;
+            background-color: white;
+            caret-color: #f7f7f8;
+            color: black;
+            padding: 7px 10px;
+            border: 1.5px solid black;
+            border-top-left-radius: 7px;
+            border-bottom-left-radius: 7px;
+            margin-right: 1px;
+            transition: all .2s ease;
+        }
+
+        .search:hover {
+            border: 2px solid rgba(255, 255, 255, 0.16);
+        }
+
+        .search:focus {
+            border: 2px solid black;
+            background-color: white;
+        }
+
+        .search__btn {
+            border: none;
+            cursor: pointer;
+            background-color: rgba(42, 42, 45, 1);
+            border-top-right-radius: 7px;
+            border-bottom-right-radius: 7px;
+            height: 100%;
+            width: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search__btn:hover {
+            background-color: rgba(54, 54, 56, 1);
+        }
+    </style>
+
+
+    <title>델리나잇</title>
+
+
+    <!--별도 css 필요할 시 아래로 추가-->
+    <!--어디서 그대로 가져오는거 아니면 클래스 이름 잘 붙여주고
+    styles.css에 작성할것-->
+</head>
+
+<body>
+<!--이 줄 div layout:fragment명과 id명 절대 수정 금지!!!!-->
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <!--내용 넣는 곳-->
+        <div class="container-fluid px-4">
+            <!--페이지 이름-->
+            <!--페이지 이름-->
+            <h3 id="test" class="mt-4">호텔 생성</h3>
+            <ol class="breadcrumb mb-4">
+                <li class="breadcrumb-item active">큰페이지 〉 중간페이지 〉 작은페이지</li>
+            </ol>                    <!--텍스트 박스-->
+
+            <div class="card mb-4">
+                <div class="card-body">
+
+                    <form action="/members/hotel/create" method="post"
+                          enctype="multipart/form-data">
+                        <div class="centerFormData"></div>
+                        <div class="container">
+                            <div class="row">
+
+                                <div class="col-6">
+
+
+                                    <div class="md-3  mb-3">
+                                        <label for="name" class="form-label">호텔명</label>
+                                        <input type="text" class="form-control" id="name" name="name">
+                                    </div>
+
+                                    <div class="md-3  mb-3">
+
+                                        <label for="content" class="form-label">설명</label>
+                                        <textarea type="text" class="form-control" id="content"
+                                                  name="content"></textarea>
+                                    </div>
+
+
+                                </div>
+                                <div class="col-6">
+                                    <div class="md-3 mb-3">
+
+                                        <label for="name" class="form-label">호텔 관리자 추가하기</label>
+                                        <div class="container1">
+                                            <input type="text" name="email" class="search"
+                                                   placeholder="본사 담당자 이메일을 입력해주세요." style="width: 350px">
+                                            <button class="search__btn" type="button">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22"
+                                                     height="22">
+                                                    <path d="M18.031 16.6168L22.3137 20.8995L20.8995 22.3137L16.6168 18.031C15.0769 19.263 13.124 20 11 20C6.032 20 2 15.968 2 11C2 6.032 6.032 2 11 2C15.968 2 20 6.032 20 11C20 13.124 19.263 15.0769 18.031 16.6168ZM16.0247 15.8748C17.2475 14.6146 18 12.8956 18 11C18 7.1325 14.8675 4 11 4C7.1325 4 4 7.1325 4 11C4 14.8675 7.1325 18 11 18C12.8956 18 14.6146 17.2475 15.8748 16.0247L16.0247 15.8748Z"
+                                                          fill="#efeff1"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                    </div>
+                                    <div class="md-3  mb-3">
+                                        <label for="name" class="form-label">검색 결과</label>
+
+                                        <table>
+                                            <th style="font-weight: normal; width: 85%">이메일</th>
+                                            <th style="font-weight: normal; width: 15%">추가하기</th>
+                                            <tbody class="tBody">
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3 mb-3">
+                            <button type="submit" class="btn btn-primary">등록</button>
+                            <a href="/members/menu/list" class="btn btn-gray">취소</a>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+
+
+
+            <script type="text/javascript" src="/js/imgscript.js"></script>
+            <script th:inline="javascript">
+
+                $(document).on("click", ".addMembers", function () {
+                    let membersId = $(this).data("membersid")
+                    $(".centerFormData").empty();
+                    $(".centerFormData").append("<input type='hidden' name='membersId' value='" + membersId + "'>")
+                    Swal.fire({
+                        icon: 'success',
+                        title: '추가 완료',
+                        text: '호텔 관리자가 추가 되었습니다.',
+                    });
+                })
+                $(".search__btn").on("click", function () {
+                    $(".tBody").empty();
+                    let email = $(".search").val()
+                    $.ajax({
+                        type: "get",
+                        url: "/rest/searchMembers",
+                        data: {"email": email},
+                        success: function (result) {
+                            if (result.email !== "ghost") {
+                                let str = "<tr><td>" + result.email + "</td><td style='text-align: center'><button class='addMembers btn btn-gray' type='button' data-membersid='" + result.id + "'>+</button></td></tr>"
+                                $(".tBody").html(str)
+                            }
+
+                        }
+
+                    })
+                })
+            </script>
+
+
+        </div>
+    </main>
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+
+
+</div>
+
+</body>
+</html>

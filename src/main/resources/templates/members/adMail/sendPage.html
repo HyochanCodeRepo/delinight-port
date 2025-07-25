@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+<body>
+
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>단체 메일 발송하기</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">고객 관리</a>
+                    </ol>
+                    <form id="mailForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">메일 제목</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="period" class="form-label">행사 일정</label>
+                            <input type="text" class="form-control" name="period" placeholder="예: 2025-05-20 ~ 2025-05-30" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="benefit" class="form-label">행사 혜택</label>
+                            <input type="text" class="form-control" name="benefit" required>
+                        </div>
+<div class="mb-3">
+                            <label for="content" class="form-label">행사 내용</label>
+                            <input type="text" class="form-control" name="content" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="mainContent" class="form-label">본문 내용</label>
+                            <textarea class="form-control" name="mainContent" rows="5" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="image" class="form-label">이메일에 첨부할 이미지</label>
+                            <input type="file" class="form-control" name="image" accept="image/*" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">템플릿 선택</label>
+                            <div class="row">
+                                <div class="col-md-4 text-center">
+                                    <img src="/img/template1.png" alt="Template 1" class="img-fluid rounded mb-2 template-image" style="width:250px; height: 350px;border:2px solid #ddd; cursor:pointer;">
+                                    <div>
+                                        <input type="radio" name="templeteId" value="1" required> 템플릿 1
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <img src="/img/template2.png" alt="Template 2" class="img-fluid rounded mb-2 template-image" style="width:250px; height: 350px;border:2px solid #ddd; cursor:pointer;">
+                                    <div>
+                                        <input type="radio" name="templeteId" value="2"> 템플릿 2
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center">
+                                    <img src="/img/template3.png" alt="Template 3" class="img-fluid rounded mb-2 template-image" style="width:250px; height: 350px;border:2px solid #ddd; cursor:pointer;">
+                                    <div>
+                                        <input type="radio" name="templeteId" value="3"> 템플릿 3
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">메일 발송</button>
+                        </div>
+                    </form>
+                    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+     background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:9999;">
+                        <img id="modalImg" src="" style="max-width:90%; max-height:90%; border:4px solid #fff;">
+                        <span onclick="document.getElementById('imageModal').style.display='none'"
+                              style="position:absolute; top:20px; right:40px; font-size:32px; color:white; cursor:pointer;">&times;</span>
+                    </div>
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+
+
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 이미지 모달 이벤트 등록
+            document.querySelectorAll('.template-image').forEach(img => {
+                img.addEventListener('click', function () {
+                    document.getElementById('modalImg').src = this.src;
+                    document.getElementById('imageModal').style.display = 'flex';
+                });
+            });
+
+            // 메일 전송
+            document.getElementById('mailForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const form = e.target;
+                const formData = new FormData(form);
+
+                // 줄바꿈 -> <br>로 치환
+                const mainContent = form.querySelector('textarea[name="mainContent"]').value;
+                const mainContentWithBr = mainContent.replace(/\n/g, "<br>");
+                formData.set("mainContent", mainContentWithBr);
+
+                fetch('/members/adMail/send', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => {
+                    if (response.ok) {
+                        alert("메일이 성공적으로 발송되었습니다.");
+                    } else {
+                        alert("메일 발송 실패!");
+                    }
+                }).catch(error => {
+                    console.error(error);
+                    alert("오류 발생!");
+                });
+            });
+        });
+    </script>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/mobile/layout}"
+>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <title>1:1문의하기</title>
+    <link rel="stylesheet" href="/css/mobile.css">
+
+
+</head>
+<body>
+    <div class="container-fluid px-3 flex-grow-1 d-flex flex-column" layout:fragment="content">
+        <form action="/users/inquire/register" th:object="${inquireDTO}" method="post" class="formWrap" enctype="multipart/form-data">
+
+            <div class="row mb-5">
+                <input type="hidden" name="id" id="id">
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-12">
+                    <label>문의유형*</label>
+                    <select th:field="*{inquireType}" class="form-select" required>
+                        <option value="ROOMSERVICE" selected>룸서비스 문의</option>
+                        <option value="ROOMCARE">룸케어 문의</option>
+                        <option value="OTHERINQUIRIES">기타문의</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-12">
+                    <label for="title">제목 *</label>
+                    <input type="text" id="title" name="title" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="row mb-5">
+                <div class="col-12">
+                    <label for="content">문의내용 *</label>
+                    <textarea id="content" name="content" class="form-control" required></textarea>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; height: 40px">
+                <button type="submit"
+                        style="justify-content:center; display: flex; align-items: center; height: 40px; font-size:0.8em; background-color: black; color: white; border: 1px solid black; margin-bottom: 0px">
+                    문의하기 &nbsp<img src="/img/mailbox21.svg" style="height: 16px; width: 16px"></button>
+                <button type="button" class="goBack"
+                        style="justify-content:center; display: flex; align-items: center; height: 40px; font-size:0.8em; background-color: white; color: black; border: 1px solid black">
+                    이전 &nbsp<img src="/img/arrow-left-square.svg" style="height: 16px; width: 16px">
+                </button>
+            </div>
+
+
+        </form>
+
+    <script text="javascript">
+
+        $(function () {
+            $(".userHeaderMsg").html("1:1 문의하기").css("font-weight", "bold").css("font-size","15px")
+
+            $(".goBack").on("click", function() {
+                window.history.back();
+            });
+
+
+
+        })
+
+
+
+
+    </script>
+
+
+
+</div>
+</body>
+</html>

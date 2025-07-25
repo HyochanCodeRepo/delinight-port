@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3 th:text="${center.name}"></h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">본사 관리</a>
+                    </ol>
+
+                    <div class="row mb-2">
+                        <label class="col-sm-2 col-form-label form-label">본사명</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control-plaintext" id="staticMembersName" th:value="${center.name}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-2">
+                        <label class="col-sm-2 col-form-label form-label">설명</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control-plaintext" th:value="${center.content}">
+                        </div>
+                    </div>
+
+
+                    <div class="text-center mt-5">
+                        <a th:href="@{/members/center/update/{id}(id=${center.id})}" class="btn btn-primary">수정</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

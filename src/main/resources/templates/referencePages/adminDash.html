@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+    <head>
+        <title>델리나잇</title>
+
+        <!--별도 css 필요할 시 아래로 추가-->
+        <!--어디서 그대로 가져오는거 아니면 클래스 이름 잘 붙여주고
+        styles.css에 작성할것-->
+    </head>
+
+    <body>
+        <!--이 줄 div layout:fragment명과 id명 절대 수정 금지!!!!-->
+        <div layout:fragment="adminContent" id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-5">
+                    <!--내용 넣는 곳-->
+                    <!--반드시 이 아래에서만 작업-->
+
+                    <!--페이지 이름-->
+                    <h3 class="mt-5">대시보드</h3>
+                    <ol class="breadcrumb mb-4">
+                        <li class="breadcrumb-item active">관리자 정보를 한눈에 확인하세요.</li>
+                    </ol>
+
+                    <!--텍스트 박스-->
+                    <div class="card custom-shadow mb-4">
+                       <div class="card-body">
+                           <h5 class="mb-4 fw-bold">기본 정보</h5>
+
+                           <hr class="hrMain">
+
+                           <div class="row mb-1">
+                               <label class="col-sm-2 col-form-label form-label">리드온리 인풋창</label>
+                               <div class="col-sm-4">
+                                   <input type="text" readonly class="form-control-plaintext" id="staticMembersName" value="홍길동">
+                               </div>
+                           </div>
+
+                           <hr><!--구분선-->
+
+                           <div class="row mb-4">
+                               <label class="col-sm-2 col-form-label form-label">일반 인풋창</label>
+                               <div class="col-sm-10">
+                                   <input type="text" class="form-control">
+                               </div>
+                           </div>
+
+                           <div class="row mb-4">
+                               <label class="col-sm-2 col-form-label form-label">전화번호</label>
+                               <div class="col-sm-10">
+                                   <input type="number" class="form-control" id="staticMembersPhone" maxlength="13" placeholder="원래있던번호">
+                                   <div class="text-sm mt-1">
+                                       전화번호를 입력하면 자동으로 하이폰이 들어갑니다. (01012345678 > 010-1234-5678)
+                                   </div>
+                               </div>
+                           </div>
+
+                           <div class="row mb-4">
+                               <label class="col-sm-2 col-form-label form-label">파일첨부</label>
+                               <div class="col-sm-10">
+                                   <div class="d-flex">
+                                       <input type="file" class="form-control w-50 me-2">
+                                       <button class="btn btn-gray">파일 선택</button>
+                                   </div>
+                               </div>
+                           </div>
+
+                           <div class="text-center mt-5">
+                               <button class="btn btn-primary me-2 px-4">확인</button>
+                               <button class="btn btn-gray px-4">취소</button>
+                           </div>
+                       </div>
+                    </div>
+
+                    <!--알럿창-->
+                    <div class="card custom-shadow mb-4">
+                        <div class="card-header">
+                            <!--아이콘-->
+                            <!--카드헤더 제목 넣는곳-->
+                            <i class="fas fa-table me-1"></i>
+
+                            알럿창
+                        </div>
+                        <div class="card-body">
+                            <!--카드바디 내용 넣는곳-->
+                            <button class="btn btn-primary m-2" id="alertStart">Alert 실행</button>
+                            <button class="btn btn-gray m-2" id="confirmStart">Confirm 실행</button>
+                            <button class="btn btn-success m-2" id="promptStart">Prompt 실행</button>
+                            <button class="btn btn-danger m-2" id="toastStart">Toast 실행</button>
+                            <button class="btn btn-warning m-2" id="ajaxStart">Ajax 실행 (깃헙 아이디 검색)</button>
+                        </div>
+                    </div>
+
+                    <!--카드-->
+                    <div class="card custom-shadow mb-4">
+                        <div class="card-header">
+                            <!--아이콘-->
+                            <!--카드헤더 제목 넣는곳-->
+                            <i class="fas fa-table me-1"></i>
+
+                            card title
+                        </div>
+                        <div class="card-body">
+                            <!--카드바디 내용 넣는곳-->
+                            <div>
+                                내용내용내용내용내용내용내용
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!--푸터 절대 수정 금지!!!!-->
+            <!--푸터-->
+            <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+        </div>
+    </body>
+</html>

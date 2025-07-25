@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+
+    <style>
+        .v-center-text {
+            padding: 0.5rem 0.8rem;
+            align-items: center;
+            border: 1px solid rgb(206, 212, 218);
+            border-radius: 0.3rem;
+            line-height: 1.5;
+        }
+        textarea {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mt-5 mb-4">
+                    <div class="card-body">
+                        <h3>1:1 문의답변</h3>
+                        <ol class="breadcrumb mb-5">
+                            <a href="/members/account/home" class="breadcrumb-item active">홈</a>
+                            <a href="/members/inquire/list" class="breadcrumb-item active">문의사항 목록</a>
+                        </ol>
+
+                        <div class="d-flex">
+                            <div class="w-50">
+                                <div class="row mb-4">
+                                    <label class="col-sm-3 col-form-label form-label">문의유형</label>
+                                    <div class="col-sm-3">
+                                        <button th:if="${inquireDTO.inquireType == T(com.onetouch.delinight.Constant.InquireType).ROOMSERVICE}" class="btn btn-gray" disabled>
+                                            룸서비스
+                                        </button>
+
+                                        <button th:if="${inquireDTO.inquireType == T(com.onetouch.delinight.Constant.InquireType).ROOMCARE}" class="btn btn-gray" disabled>
+                                            룸케어
+                                        </button>
+
+                                        <button th:if="${inquireDTO.inquireType == T(com.onetouch.delinight.Constant.InquireType).OTHERINQUIRIES}" class="btn btn-gray" disabled>
+                                            기타문의
+                                        </button>
+
+                                    </div>
+                                    <label class="col-sm-3 col-form-label form-label">방 호수</label>
+                                    <div class="col-sm-3" >
+                                        <div th:if="${inquireDTO.checkInDTO}" style="padding-top: 10px">
+                                            [[${inquireDTO.checkInDTO.roomDTO.name}]]
+                                        </div>
+                                        <div th:if="${inquireDTO.checkOutLogDTO}">
+                                            [[${inquireDTO.checkOutLogDTO.roomDTO.name}]]
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <label class="col-sm-2 col-form-label form-label">제목</label>
+                                    <div class="col-sm-9">
+                                        <div class="form-control-plaintext v-center-text" readonly>[[${inquireDTO.title}]]</div>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <label class="col-sm-2 col-form-label form-label">문의내용</label>
+                                    <div class="col-sm-9">
+                                        <div style="height: 270px" class="form-control-plaintext v-center-text" readonly>[[${inquireDTO.content}]]</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="w-50">
+                                <div class="row mb-2">
+                                    <label class="col-sm-2 col-form-label form-label">답변내용</label>
+                                    <div class="col-sm-9">
+                                        <textarea style="height: 400px" th:if="${replyDTO.replyText == null}" name="replyText" class="form-control replyText" oninput="autoResize(this)" placeholder="작성하기"></textarea>
+                                        <div th:if="${replyDTO.replyText != null}" class="form-control-plaintext v-center-text">[[${replyDTO.replyText}]]</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-5 text-center">
+                            <button type="submit" class="btn btn-primary insertBtn"  th:if="${replyDTO.replyText == null}">전송</button>
+                            <a href="/members/inquire/list" class="btn btn-gray">취소</a>
+                        </div>
+                    </div>
+            </div>
+
+        </div>
+    </main>
+
+
+    <script>
+        window.addEventListener('load', function () {
+            document.querySelectorAll('.auto-resize').forEach(function (el) {
+                el.style.height = 'auto';
+                el.style.height = el.scrollHeight + 'px';
+            });
+        });
+    </script>
+
+    <script th:inline="javascript">
+
+        $(function () {
+            $(".userHeaderMsg").html("문의사항 보기").css("font-weight", "bold").css("font-size","20px")
+        })
+
+
+
+
+        $(function () {
+            select()
+
+
+            $(".insertBtn").on("click", function () {
+                const replyTextVal = $(".replyText").val().trim(); //클래스가 붙은 입력창에서 값을 가져옴
+                //trim()은 공백을 제거 (양쪽 끝에있는 스페이스, 탭같은거)
+                const inquireId = [[${inquireDTO.id}]]; //서버에 넘겨주는 InquireId
+
+                if (!replyTextVal) {
+                    return;
+                }
+
+                const insertD = {
+                    replyText: replyTextVal,
+                    inquireId: inquireId
+                };//서버로 보낼 데이터 묶음 내용 + 글번호
+
+                $.ajax({
+                    url: "/reply/register",
+                    type: "post",
+                    data: $.param(insertD),//객체를 replyText=내용&inquireId=숫자 이런 식의 문자열로 바꿈
+                    success: function (response) {
+                        window.location.reload()
+
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 400) {//실패 이유가 400이면 유효성 검사 실패로 판단
+                            let errors;
+                            try {//서버에서 에러 정보를 문자열(JSON)로 보내줬을때
+                                //그걸 자바스크립트 객체로 변환하려고 함
+                                errors = JSON.parse(xhr.responseText);
+                            } catch (e) {
+                                alert("유효성 오류 응답을 파싱할 수 없습니다.")
+                                return;
+                            }//실패하면 "응답을 파싱할 수 없다"는 메세지
+                            let msg = "입력 오류:\n";
+                            errors.forEach(e => {
+                                msg += "_ " + e.defaultMessage + "\n";
+                            });//여러 개의 유효성 오류가 있을 수 있으니
+                            //하나씩 돌면서 메세지를 쌓아서 보여줌
+                            alert(msg);
+                        } else {
+                            alert("서버 오류가 발생했습니다.");
+                        }
+
+                    }
+                });
+
+
+            })
+            function select() {
+                var inquireId = [[${inquireDTO.id}]]
+
+
+                $.ajax({
+
+                    url: "/reply/list/" + inquireId,
+                    type: "get",
+                    success: function (data) {
+                        console.log(data)
+                        let str = "";
+                        for (let i = 0; i < data.length; i++) {
+                            str += `
+                                    <span>${data[i].replyText}</span>`
+                        }
+                        $(".replyWrap").html(str)
+                    }
+                })
+            }
+
+        });
+
+
+    </script>
+    <script>
+        function autoResize(a) {
+            a.style.height = 'auto'; // 높이 초기화
+            a.style.height = a.scrollHeight + 'px'; // 글자 수에 맞게 높이 조정
+        }
+    </script>
+
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+
+
+
+
+</body>
+</html>

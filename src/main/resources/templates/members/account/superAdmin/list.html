@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>본사 관리자 계정 승인 내역</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/home" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">계정 승인 관리</a>
+                    </ol>
+
+                    <!--네비게이션-->
+                    <div class="btnWrap d-flex justify-content-between align-items-center mb-4">
+                        <ul class="nav nav-pills">
+                            <li class="nav-item">
+                                <a class="nav-link" th:classappend="${status == null or status == ''} ? 'active'"
+                                   aria-current="page" th:href="@{/members/account/superAdmin/list(status=null)}">전체</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:classappend="${status == 'WAIT'} ? 'active'"
+                                   th:href="@{/members/account/superAdmin/list(status='WAIT')}">승인대기</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:classappend="${status == 'VALID'} ? 'active'"
+                                   th:href="@{/members/account/superAdmin/list(status='VALID')}">승인</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" th:classappend="${status == 'NOTVALID'} ? 'active'"
+                                   th:href="@{/members/account/superAdmin/list(status='NOTVALID')}">반려</a>
+                            </li>
+                        </ul>
+
+
+                    </div>
+
+                    <table class="table align-middle table-hover">
+
+                        <thead>
+                        <th scope="col">#</th>
+                        <th scope="col">이름</th>
+                        <th scope="col">이메일</th>
+                        <th scope="col">핸드폰번호</th>
+                        <th scope="col">권한</th>
+                        <th scope="col">처리여부</th>
+                        <th scope="col">승인여부</th>
+                        </thead>
+
+                        <tbody>
+                        <th:block th:each="list:${paging}">
+                            <tr>
+                                <th scope="row offset-4" th:text="${list.id}"></th>
+                                <td th:data-num="${list.id}">
+                                    [[${list.name}]]
+                                </td>
+                                <td th:text="${list.email}"></td>
+                                <td th:text="${list.phone}"></td>
+
+
+                                <td th:text="${list.role}"></td>
+
+                                <td th:if="${list.status.name() == 'WAIT'}" class="text-danger fw-bold">대기중</td>
+                                <td th:if="${list.status.name() == 'VALID' or list.status.name() == 'NOTVALID'}" class="text-secondary">처리됨</td>
+
+                                <td th:if="${list.status.name() == 'WAIT'}" class="d-flex">
+                                    <button class="btn btn-primary" th:value="${list.id}" id="approveBtn">승인</button>
+                                    <button class="btn btn-danger offset-0" th:value="${list.id}" id="DisapproveBtn">반려</button>
+                                </td>
+
+                                <td th:if="${list.status.name() == 'VALID'}" class="text-primary" th:text="승인완료"></td>
+                                <td th:if="${list.status.name() == 'NOTVALID'}" class="text-danger" th:text="반려"></td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+
+                    </table>
+
+                    <!--페이징 처리-->
+                    <div th:if="${!paging.isEmpty()}">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${!paging.hasPrevious} ? 'disabled'">
+                                <a class="page-link" th:href="@{|?page=${paging.number > 1 ? paging.number - 1 : 0}|}">
+                                    <span>이전</span>
+                                </a>
+                            </li>
+                            <li th:each="page: ${#numbers.sequence(0, paging.totalPages -1)}"
+                                th:if="${page >= paging.number-5 and page <= paging.number+5}"
+                                th:classappend="${page == paging.number} ? 'active'"
+                                class="page-item">
+                                <a th:text="${page+1}" class="page-link" th:href="@{|?page=${page}|}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${!paging.hasNext} ? 'disabled'">
+                                <a class="page-link" th:href="@{|?page=${paging.number+1}}">
+                                    <span>다음</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<!--    <input readonly style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;width:300px;border: 0px solid black; border-bottom: 1.5px solid black" class="linkValue"-->
+<!--           >-->
+
+    <!--스크립스-->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+    <script th:inline="javascript">
+        let aa = $(".aa");
+
+
+
+
+        $(function () {
+            $(document).on("click", "#approveBtn", function () {
+                let id = this.getAttribute("value");
+                $.ajax({
+                    url: "/rest/approveBtn/" + id,
+                    type: "get",
+                    success: function (data) {
+                        console.log(data)
+                        location.reload();
+
+                    }
+
+                })
+            })
+        })
+
+        $(function () {
+            $(document).on("click", "#DisapproveBtn", function () {
+                let id = this.getAttribute("value");
+                $.ajax({
+                    url: "/rest/DisapproveBtn/" + id,
+                    type: "get",
+                    success: function (data) {
+                        console.log(data)
+                        location.reload();
+
+                    }
+
+                })
+            })
+        })
+        // document.getElementById("approveBtn").addEventListener("click", function () {
+        //     let buttonValue = this.getAttribute("value");
+        //     alert(buttonValue)
+        //     $.ajax({
+        //         url : "/members/changestatus",
+        //         method : "post",
+        //         data : buttonValue,
+        //         success: function (data) {
+        //             alert("성공")
+        //             console.log(data)
+        //         }
+        //     })
+        // });
+    </script>
+
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

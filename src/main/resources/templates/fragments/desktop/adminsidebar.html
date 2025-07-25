@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>사이드바&컨텐츠</title>
+</head>
+<body>
+
+<div th:fragment="adminSidebar" id="layoutSidenav_nav">
+    <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+        <div class="sb-sidenav-menu">
+            <div class="nav">
+
+
+                <!--어카운트-->
+                <div class="sb-sidenav-menu-heading">account</div>
+
+                <!--대시보드-->
+                <!--수퍼어드민, 호텔어드민, 스토어어드민-->
+                <a class="nav-link" href="/members/account/dashHub" th:if="${role.name() != 'SYSTEMADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-house"></i></div>
+                    홈 화면
+                </a>
+                <!--계정관리-->
+                <!--시스템어드민, 수퍼어드민, 호텔어드민-->
+                <a class="nav-link" href="/members/account/accountHub"
+                   th:if="${role.name() != 'STOREADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-circle-user"></i></div>
+                    계정 승인 관리
+                </a>
+                <!--가맹점관리-->
+                <!--스토어어드민-->
+                <a class="nav-link" th:href="@{/members/store/read(id=${storeId})}"
+                   th:if="${role.name() == 'STOREADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-store"></i></div>
+                    내 가맹점 관리
+                </a>
+
+
+                <!--매니지먼트-->
+                <div class="sb-sidenav-menu-heading">Management</div>
+
+                <!--본사관리-->
+                <!--시스템어드민, 수퍼어드민-->
+                <a class="nav-link" href="/members/account/centerhub"
+                   th:if="${role.name() == 'SUPERADMIN' or role.name() == 'SYSTEMADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-hotel"></i></div>
+                    본사 관리<br>
+                </a>
+                <a class="nav-link" href="/members/center/create"
+                   th:if="${role.name() == 'SYSTEMADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-hotel"></i></div>
+                    본사 추가<br>
+                </a>
+                <!--브랜드관리-->
+                <!--시스템어드민, 수퍼어드민-->
+                <a class="nav-link" href="/members/brand/list"
+                   th:if="${role.name() == 'SUPERADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-store"></i></div>
+                    브랜드 관리<br>
+                </a>
+
+                <!--지사관리-->
+                <!--수퍼어드민-->
+                <a class="nav-link" href="/members/branch/list" th:if="${role.name() == 'SUPERADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-building"></i></div>
+                    지사 관리
+                </a>
+                <!--호텔관리-->
+                <!--수퍼어드민-->
+                <a class="nav-link" href="/members/hotel/list" th:if="${role.name() == 'SUPERADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-archway"></i></div>
+                    호텔 관리
+                </a>
+                <!--호텔관리-->
+                <!--호텔어드민-->
+                <a class="nav-link collapsed" href="#" th:if="${role.name() == 'ADMIN'}"
+                   data-bs-toggle="collapse" data-bs-target="#collapseHotel" aria-expanded="false"
+                   aria-controls="collapseHotel">
+                    <div class="sb-nav-link-icon"><i class="fas fa-archway"></i></div>
+                    호텔 관리
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseHotel" aria-labelledby="headingOne"
+                     data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+
+                        <a class="nav-link" th:if="${role.name()=='ADMIN'}"
+                           th:href="@{/members/hotel/read/{hotelId}(hotelId=${hotelId})}">호텔 정보</a>
+                        <a class="nav-link" href="/members/checkin/list">체크인 관리</a>
+                        <a class="nav-link" href="/members/room/listB">룸 관리</a>
+
+                    </nav>
+                </div>
+                <!--가맹점관리-->
+                <!--호텔어드민-->
+                <a class="nav-link collapsed" href="#" th:if="${role.name() == 'ADMIN'}"
+                   data-bs-toggle="collapse" data-bs-target="#collapseStore" aria-expanded="false"
+                   aria-controls="collapseStore">
+                    <div class="sb-nav-link-icon"><i class="fas fa-store"></i></div>
+                    가맹점 관리
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseStore" aria-labelledby="headingOne"
+                     data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+
+                        <a class="nav-link" href="/members/store/list">가맹점 목록</a>
+                        <a class="nav-link" href="/members/store/memberlist">가맹점주 관리</a>
+
+                    </nav>
+                </div>
+                <!--고객서비스-->
+                <!--호텔어드민-->
+                <a class="nav-link collapsed" href="#" th:if="${role.name() == 'ADMIN'}"
+                   data-bs-toggle="collapse" data-bs-target="#collapseService" aria-expanded="false"
+                   aria-controls="collapseService">
+                    <div class="sb-nav-link-icon"><i class="fas fa-headset"></i></div>
+                    고객 서비스
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseService" aria-labelledby="headingOne"
+                     data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+
+                        <a class="nav-link" href="/members/roomCare/list">룸 케어</a>
+                        <a class="nav-link" href="/members/roomCare/Menu/list">룸 케어 메뉴 관리</a>
+                        <a class="nav-link" href="/members/inquire/list">문의사항 관리</a>
+
+                    </nav>
+                </div>
+                <!--주문관리-->
+                <!--스토어어드민-->
+                <a class="nav-link" th:if="${role.name() == 'STOREADMIN'}" href="/members/store/orders/list">
+                    <div class="sb-nav-link-icon"><i class="fas fa-bell-concierge"></i></div>
+                    주문 관리
+                </a>
+                <!--메뉴관리-->
+                <!--스토어어드민-->
+                <a class="nav-link collapsed" href="#" th:if="${role.name() == 'STOREADMIN'}"
+                   data-bs-toggle="collapse" data-bs-target="#collapseMenu" aria-expanded="false"
+                   aria-controls="collapseMenu">
+                    <div class="sb-nav-link-icon"><i class="fas fa-utensils"></i></div>
+                    메뉴 관리
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseMenu" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+
+                        <a class="nav-link" href="/members/menu/list">메뉴 목록보기</a>
+                        <a class="nav-link" href="/members/menu/create">메뉴 등록</a>
+
+                    </nav>
+                </div>
+                <!--고객만족도 평가-->
+                <!--수퍼어드민, 호텔어드민, 스토어어드민-->
+                <a class="nav-link collapsed" href="#" th:if="${role.name() != 'SYSTEMADMIN'}"
+                   data-bs-toggle="collapse" data-bs-target="#collapseNPS" aria-expanded="false"
+                   aria-controls="collapseNPS">
+                    <div class="sb-nav-link-icon"><i class="fas fa-medal"></i></div>
+                    고객만족도 평가
+                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseNPS" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+
+                        <a class="nav-link" href="/members/nps/list">데이터 테이블</a>
+                        <a class="nav-link" href="/members/nps/chart">차트 보기</a>
+
+                    </nav>
+                </div>
+                <a class="nav-link collapsed" href="#" th:if="${role.name() == 'ADMIN'}"
+                data-bs-toggle="collapse" data-bs-target="#collapseAD" aria-expanded="false"
+                aria-controls="collapseAD">
+                <div class="sb-nav-link-icon"><i class="bi bi-envelope"></i></div>
+                고객 관리
+                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                </a>
+                <div class="collapse" id="collapseAD" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                    <nav class="sb-sidenav-menu-nested nav">
+
+                        <a class="nav-link" href="/members/adMail/sendPage">단체 메일 발송</a>
+
+                    </nav>
+                </div>
+
+
+                <!--정산-->
+                <div th:if="${role.name() != 'SYSTEMADMIN'}" class="sb-sidenav-menu-heading">DASHBOARD</div>
+
+                <a class="nav-link" href="/members/payment/list" th:if="${role.name() != 'SYSTEMADMIN'}">
+                    <div class="sb-nav-link-icon"><i class="fas fa-square-poll-vertical"></i></div>
+                    매출 정산보기
+                </a>
+
+            </div>
+        </div>
+        <div class="sb-sidenav-footer">
+            <div class="small">Logged in as:</div>
+            <div th:text="${member.role}"></div>
+        </div>
+    </nav>
+</div>
+
+</body>
+</html>

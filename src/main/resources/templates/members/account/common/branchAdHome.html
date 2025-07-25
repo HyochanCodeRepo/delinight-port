@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+
+    <!--별도 css 필요할 시 아래로 추가-->
+    <!--어디서 그대로 가져오는거 아니면 클래스 이름 잘 붙여주고
+    styles.css에 작성할것-->
+</head>
+
+<body>
+<!--이 줄 div layout:fragment명과 id명 절대 수정 금지!!!!-->
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <!--작업 영역-->
+            <!--반드시 이 안에서만 작업-->
+
+            <!--페이지 제목 명명-->
+            <h3 class="mt-5">관리자 홈</h3>
+            <ol class="breadcrumb mb-4">
+                <!--페이지 소제목 명명-->
+                <a href="#" class="breadcrumb-item active no-click" th:text="'환영합니다, '+${member.name}+' 님'"></a>
+            </ol>
+
+            <!--기본 카드 양식-->
+            <div class="d-flex gap-3" style="margin-bottom: -0.5rem;">
+                <div class="card custom-shadow mb-4 card-flex-50" >
+                    <div class="card-body">
+                        <!--카드 제목-->
+                        <h5 class="mb-4">1</h5>
+                        <hr class="hrMain">
+
+
+
+
+                    </div>
+                </div>
+
+                <div class="card custom-shadow mb-4 card-flex-50">
+                    <div class="card-body">
+                        <!--카드 제목-->
+                        <h5 class="mb-4">2</h5>
+                        <hr class="hrMain">
+
+
+
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="card custom-shadow mb-4">
+                <div class="card-body">
+                    <!--카드 제목-->
+                    <h5 class="mb-4">3</h5>
+                    <hr class="hrMain">
+                </div>
+
+
+
+            </div>
+
+
+
+
+
+        </div>
+    </main>
+
+
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

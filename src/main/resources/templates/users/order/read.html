@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/mobile/layout}"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>주문 하기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <style>
+
+        .requestMemo {
+            width: 100%;
+        }
+
+        .wrapper {
+            width: 100%;
+            position: relative;
+        }
+
+        .input {
+            width: 100%;
+            height: 150px;
+            border-radius: 5px;
+            border: 1px #323232 solid;
+            padding: 5px 15px;
+            background-color: white;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .placeholder {
+            width: 30%;
+            position: absolute;
+            top: -18px;
+            left: 85%;
+            transform: translateX(-50%);
+            z-index: 2;
+            text-align: center;
+            color: black;
+            background-color: white;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 1.5px;
+            transition: all 0.3s;
+            opacity: 0;
+        }
+
+        .input::placeholder {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+
+        .input:focus + .placeholder {
+            opacity: 1;
+        }
+
+        .input:focus {
+            outline: 2px solid black;
+            border: none;
+            color: black;
+        }
+
+        .input:focus::placeholder {
+            opacity: 0;
+        }
+
+        .itemContents {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* 위, 중간, 아래 */
+            height: 100%; /* 부모 높이만큼 늘어남 */
+            gap: 4px; /* 선택: 요소 간 간격 */
+        }
+
+        .itemOrders {
+            gap: 3px;
+            padding: 0;
+            align-items: center;
+        }
+
+        .order-item-tag {
+            font-size: 12px;
+            display: inline-block;
+            border: 1px solid black;
+            border-radius: 8px;
+            padding: 2px 6px;
+            margin-right: 3px;
+            margin-bottom: 3px;
+        }
+    </style>
+
+</head>
+<body>
+<div>
+    <div class="container-fluid px-3 flex-grow-1 d-flex flex-column" layout:fragment="content">
+
+    <!--PENDING, // 결제 방법 및 결제 전 대기 상태
+            AWAITING, // 스토어의 오더 승인 대기중
+            PREPARING, // 음식 준비 단계
+            DELIVERING, // 배달 중 상태
+            DELIVERED-->
+
+        <div class="orderList">
+            <div class="row">
+                <h2 class="mt-3" style="margin-bottom: -10px; font-weight:  bold">[[${ordersDTO.storeDTO.name}]]</h2>
+            </div>
+            <div class="row" style="display: flex; justify-content: space-between">
+                <div class="col-6">
+                    <span style="display:inline-block; margin-bottom: 20px; margin-top: 10px; font-size: 22px; ">[[${ordersDTO.id}]]번 주문 내역</span>
+                </div>
+                <div class="col-6">
+                     <span style="width:100%; display:inline-block; text-align: end;margin-bottom: 20px; margin-top: 10px; font-size: 22px;" th:if="${ordersDTO.getOrdersStatus().name().equals('PENDING')}"><img
+                             style="width: 22px; height: 22px" src="/img/exclamation-diamond.svg"> 주문 요청 전</span>
+                    <span style="width:100%; display:inline-block; text-align: end;margin-bottom: 20px; margin-top: 10px; font-size: 22px;" th:if="${ordersDTO.getOrdersStatus().name().equals('AWAITING')}"><img
+                            style="width: 22px; height: 22px" src="/img/hourglass-split.svg"> 가맹점 승인 전</span>
+                    <span style="width:100%; display:inline-block; text-align: end; margin-bottom: 20px; margin-top: 10px; font-size: 22px;" th:if="${ordersDTO.getOrdersStatus().name().equals('PREPARING')}"><img
+                            style="width: 22px; height: 22px" src="/img/cooking.png"> 조리 중</span>
+                    <span style="width:100%; display:inline-block; text-align: end; margin-bottom: 20px; margin-top: 10px; font-size: 22px;" th:if="${ordersDTO.getOrdersStatus().name().equals('DELIVERING')}"><img
+                            style="width: 22px; height: 22px" src="/img/truck.svg"> 배달 중</span>
+                    <span style="width:100%; display:inline-block; margin-bottom: 20px; text-align: end; margin-top: 10px; font-size: 22px;" th:if="${ordersDTO.getOrdersStatus().name().equals('DELIVERED')}"><img
+                            style="width: 22px; height: 22px" src="/img/2236267.webp"> 배달 완료</span>
+                </div>
+
+            </div>
+
+            <div class="row itemWrap" th:each="ordersItemDTO : ${ordersDTO.ordersItemDTOList}">
+                <div class="row mb-2">
+                    <div class="col-4">
+                        <div style="width: 100px; height: 100px"><img class="imgBox"
+                                                                      th:src="${ordersItemDTO.menuDTO.getImgUrl()}">
+                        </div>
+                    </div>
+                    <div class="col-8 itemContents">
+                        <div class="row itemName">[[${ordersItemDTO.menuDTO.getName()}]]
+                        </div>
+                        <div class="row itemContent">[[${ordersItemDTO.menuDTO.getContent()}]]
+                        </div>
+                        <div class="row itemPrice">
+<span style="font-size: 18px; font-weight: bold"
+      th:text="${#numbers.formatInteger(ordersItemDTO.menuDTO.price,3, 'COMMA') + '원'}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="requestMemo row">
+                    <label class="wrapper" th:if="${!ordersDTO.getMemo().equals('')}">
+                        <input type="text" readonly class="input memos"
+                               th:value="${ordersDTO.getMemo()}">
+                        <span class="placeholder">요청 사항</span>
+                    </label>
+                    <label class="wrapper" th:if="${ordersDTO.getMemo().equals('')}">
+                        <input type="text" readonly class="input memos"
+                               value="요청 하신 사항이 없습니다.">
+                        <span class="placeholder">요청 사항</span>
+                    </label>
+
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+        <div class="timeStampWrap">
+            <h4 style="margin-bottom: 10px; margin-top: 10px; font-size: 1.2em; font-weight: bold">주문 상세 시간</h4>
+                <table>
+                    <tr>
+                        <td style="width: 50%">
+                            주문 일시
+                        </td>
+                        <td style="width: 50%; text-align: end" th:text="${#temporals.format(ordersDTO.pendingTime, 'yyyy-MM-dd HH:mm:ss')}">
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            승인 일시
+                        </td>
+                        <td style="width: 50%; text-align: end" th:if="${ordersDTO.getAwaitingTime()!=null}" th:text="${#temporals.format(ordersDTO.awaitingTime, 'yyyy-MM-dd HH:mm:ss')}">
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            조리 시작
+                        </td>
+                        <td style="width: 50%; text-align: end" th:if="${ordersDTO.getPreparingTime()!=null}" th:text="${#temporals.format(ordersDTO.preparingTime, 'yyyy-MM-dd HH:mm:ss')}">
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            배달 시작
+                        </td>
+                        <td style="width: 50%; text-align: end" th:if="${ordersDTO.getDeliveringTime()!=null}" th:text="${#temporals.format(ordersDTO.deliveringTime, 'yyyy-MM-dd HH:mm:ss')}">
+
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            배달 완료
+                        <td style="width: 50%; text-align: end" th:if="${ordersDTO.getDeliveredTime()!=null}" th:text="${#temporals.format(ordersDTO.deliveredTime, 'yyyy-MM-dd HH:mm:ss')}">
+                        <td>
+
+                        </td>
+                    </tr>
+                </table>
+        </div>
+        <div class="receiptWrap">
+            <h4 style="margin-bottom: 10px; margin-top: 10px; font-size: 1.2em; font-weight: bold">구매 금액</h4>
+            <div class="storeReceipt">
+                <p th:each="ordersItem : ${ordersDTO.ordersItemDTOList}"
+                   style="margin-bottom: 5px; display: flex; justify-content: space-between">
+                    <span th:text="${ordersItem.menuDTO.name}"></span>
+                    <span th:text="${#numbers.formatInteger(ordersItem.getMenuDTO().price, 3, 'COMMA') + '원'}"></span>
+                    <span th:text="${ordersItem.getQuantity() + '개'}"></span>
+                </p>
+                <p style="margin-top:10px; margin-bottom:10px; display: flex; justify-content: space-between;"><span>총 결제 금액</span><span
+                        th:text="${#numbers.formatInteger(ordersDTO.totalPrice, 3, 'COMMA') + '원'}"></span></p>
+            </div>
+        </div>
+        <script src="https://js.tosspayments.com/v2/standard"></script>
+        <script th:inline="javascript">
+
+
+        </script>
+        <script th:inline="javascript">
+            $(function () {
+                $(".userHeaderMsg").html("주문 상세").css("font-weight", "bold").css("font-size","20px")
+            })
+        </script>
+
+    </div>
+
+
+</div>
+
+</body>
+</html>

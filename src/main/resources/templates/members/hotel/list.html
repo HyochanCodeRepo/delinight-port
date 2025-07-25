@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <style>
+        .modal-body{
+            height: 500px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+    </style>
+
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>등록된 호텔 목록</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">호텔 관리</a>
+                    </ol>
+
+                    <div class="d-flex justify-content-end mb-3">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#hotelCreate">
+                            새 호텔 +
+                        </button>
+                    </div>
+                    <table class="table table-hover align-middle">
+
+                        <thead>
+                        <th scope="col">#</th>
+                        <th scope="col">이름</th>
+                        <th scope="col">설명</th>
+                        <th scope="col">관리자</th>
+                        <th scope="col">수정</th>
+                        </thead>
+
+                        <tbody>
+                        <th:block  th:each="list,stat:${hotelDTOList}">
+                            <tr>
+                                <th scope="row offset-4" th:text="${list.id}" hidden="hidden"></th>
+                                <th scope="row" th:text="${stat.count}"></th>
+                                <td><a class="alink-title" th:data-num="${list.id}" th:href="@{/members/hotel/read/{id}(id=${list.id})}">
+                                    [[${list.name}]]
+                                </a>
+                                </td>
+                                <td th:text="${list.content}"></td>
+                                <td>
+                                    <span th:if="${list.membersDTO != null}" th:text="${list.membersDTO.name}"></span>
+                                    <button th:if="${list.membersDTO == null}" type="button" class="addMembers btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" th:data-hotelid="${list.getId()}">
+                                        관리자 추가하기
+                                    </button>
+                                </td>
+                                <td>
+                                    <button th:if="${list.membersDTO != null}" class="modiMembers btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#exampleModal2" th:data-name="${list.membersDTO.name}" th:data-hotelid="${list.getId()}"><i class="fa-solid fa-pen"></i></button>
+
+                                    <button class="btn btn-outline-danger" id="delBtn" th:value="${list.id}"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+                    </table>
+
+                    <div class="modal fade" id="hotelCreate" tabindex="-1" aria-labelledby="hotelCreateLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content" style="top: -170px">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="hotelCreateLabel">새 호텔 등록</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+
+                                <div class="modal-body">
+                                    <form>
+                                        <div class="mb-3">
+                                            <label class="form-label">소속 지사</label>
+                                            <select class="form-select branchId">
+                                                <option selected disabled>지사 선택</option>
+                                                <option th:each="branch : ${branchList}" th:value="${branch.id}">[[${branch.name}]]</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">브랜드</label>
+                                            <select class="form-select brandId">
+                                                <option selected disabled>브랜드 선택</option>
+                                                <option th:each="brand : ${brandList}" th:value="${brand.id}">[[${brand.name}]]</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">호텔 명</label>
+                                            <input type="text" class="form-control hotelName" placeholder="호텔 이름을 입력하세요">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">호텔 소개</label>
+                                            <input type="text" class="form-control hotelContent" placeholder="간단한 소개를 입력하세요">
+                                        </div>
+
+                                        <input type="hidden" class="centerId" th:value="${centerId}">
+
+                                        <div class="mb-3">
+                                            <label class="form-label" for="formFileLg">호텔 배너 이미지</label>
+                                            <input name="image" class="form-control imgInput" id="formFileLg" type="file">
+                                            <div class="form-text">호텔 배너 이미지를 넣어주세요.</div>
+                                        </div>
+                                        <div class="hiddenImgNum"></div>
+
+                                    </form>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary saveBtn" data-bs-dismiss="modal">저장</button>
+                                    <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel">관리자 추가하기</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                            <th>#</th>
+                                            <th>이름</th>
+                                            <th>이메일</th>
+                                            <th></th>
+                                        </thead>
+                                        <tbody class="resultSpace" style="margin-bottom: 500px;">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                    <button type="button" class="btn btn-primary ">저장</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="exampleModal2" tabindex="-1" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="exampleModalLabel2">관리자 변경하기</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <table class="table table-hover align-middle">
+                                        <thead>
+                                        <th>#</th>
+                                        <th>이름</th>
+                                        <th>이메일</th>
+                                        <th></th>
+                                        </thead>
+                                        <tbody class="resultSpace" style="margin-bottom: 500px;">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-gray" data-bs-dismiss="modal">취소</button>
+                                    <button type="button" class="btn btn-primary">저장</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+    <script type="text/javascript" src="/js/imgscript.js"></script>
+
+
+    <!--스크립트 시작 -->
+    <script>
+
+
+        $(function () {
+            $(".saveBtn").on("click", function () {
+                let hiddenImgNum = $(".imgNum").val()
+
+                let hotelName = $(".hotelName").val()
+                let hotelContent = $(".hotelContent").val()
+                let branchId = $(".branchId").val()
+                let brandId = $(".brandId").val();
+
+
+                $.ajax({
+
+                    url:"/members/hotel/create",
+                    type:"post",
+                    data:{
+                        name: hotelName,
+                        content : hotelContent,
+                        branchId : branchId,
+                        brandId : brandId,
+                        imgNum : hiddenImgNum
+                    },
+                    success : function (msg) {
+                        window.location.reload()
+                    },
+                    error : function () {
+                        alert("오류 발생")
+                    }
+
+                })
+            })
+        })
+        $(document).on("click", ".modiMembers2", function () {
+            let memberId = $(this).data("memberid")
+            let hotelId = $(".resultSpace").data("hotelid")
+            let listName = $(this).data("name")
+
+
+            $.ajax({
+                url: "/hotel/rest/modify",
+                type: "post",
+                data : {"memberId": memberId, "hotelId" : hotelId},
+                success: function () {
+                    alert("성공")
+                    location.reload();
+                    
+                },
+                error: function (err) {
+                    alert(err)
+                },
+            })
+        });
+
+
+        $(document).on("click", ".modiMembers", function () {
+            let hotelId = $(this).data("hotelid");
+            let currentName = $(this).data("name")
+
+            $.ajax({
+                url: "/hotel/rest/membersList",
+                type: "get",
+                success:function (result) {
+                    $(".resultSpace").empty();
+                    let topRow = null;
+                    result.forEach(function (resultItem) {
+                        let tr = $("<tr></tr>").css({
+                            "background-color": "#f9f9f9", /* 하이라이트 */
+                            "border": "1px solid #ddd",   /* 테두리 */
+                            "margin-bottom": "20px",      /* 행 아래의 간격 */
+                            "padding": "30px",/* 행 안쪽 간격 */
+                            "margin-right": "40px"
+                        });
+                        if (resultItem.name === currentName) {
+                            topRow = $("<tr></tr>").css({
+                                "background-color": "#f9f9f9",
+                                "border": "1px solid #ddd",
+                                "margin-bottom": "20px",
+                                "padding": "30px",
+                                "margin-right": "40px"
+                            });
+                            topRow.append("<td>" + resultItem.id + "</td>");
+                            topRow.append("<td>" + resultItem.name + "</td>");
+                            topRow.append("<td>" + resultItem.email + "</td>");
+                            topRow.append("<td><button class='btn-gray btn modiMembers2' disabled data-memberid='" + resultItem.id + "'>현재 관리자</button></td>");
+                        } else {
+                            tr.append("<td>" + resultItem.id + "</td>");
+                            tr.append("<td>" + resultItem.name + "</td>");
+                            tr.append("<td>" + resultItem.email + "</td>");
+                            tr.append("<td><button class='btn-outline-primary btn modiMembers2' data-memberid='" + resultItem.id + "'>변경</button></td>");
+                        }
+
+
+                        $(".resultSpace").append(tr);
+                        $(".resultSpace").attr("data-hotelid",hotelId);
+
+                    });
+                    if (topRow) {
+                        $(".resultSpace").prepend(topRow)
+                    }
+
+
+                }
+
+
+            })
+        });
+
+
+
+        $(document).on("click",".addMembers2",function () {
+            let memberId = $(this).data("memberid")
+            let hotelId = $(".resultSpace").data("hotelid")
+            $.ajax({
+                url:"/hotel/rest/addMember",
+                type:"post",
+                data: {"membersId":memberId, "hotelId":hotelId},
+                success:function (){
+                    alert("멤버가 추가되었습니다.")
+                    location.reload();
+                },
+                error:function (err) {
+                    console.log(err)
+                }
+
+
+            })
+
+
+
+        })
+
+
+        $(document).on("click",".addMembers",function () {
+
+            let hotelId = $(this).data("hotelid")
+
+
+            $.ajax({
+                url: "/hotel/rest/membersList",
+                type: "get",
+                success:function (result) {
+                    $(".resultSpace").empty();
+                    result.forEach(function (resultItem) {
+                        let tr = $("<tr></tr>").css({
+                            "background-color": "#f9f9f9", /* 하이라이트 */
+                            "border": "1px solid #ddd",   /* 테두리 */
+                            "margin-bottom": "20px",      /* 행 아래의 간격 */
+                            "padding": "30px",/* 행 안쪽 간격 */
+                            "margin-right": "40px"
+                        });
+
+                        tr.append("<td>" + resultItem.id + "</td>");
+                        tr.append("<td>" + resultItem.name + "</td>");
+                        tr.append("<td>" + resultItem.email + "</td>");
+                        tr.append("<td><button class='btn-primary btn addMembers2' data-memberid='" + resultItem.id + "'>추가하기</button></td>");
+
+                        $(".resultSpace").append(tr);
+                        $(".resultSpace").attr("data-hotelid",hotelId);
+
+                    });
+
+
+
+                }
+
+
+            })
+
+        })
+
+        $(function (){
+            $(".createHot").on("click",function () {
+                let branchName = $(".branchName").val();
+                let branchContent = $(".branchContent").val();
+                let centerId = $(".centerId").val();
+                $.ajax({
+
+                    url:"/members/branch/create",
+                    type:"post",
+                    data: {
+                        name : branchName,
+                        content : branchContent,
+                        centerId : centerId,
+
+                    },
+                    success : function () {
+                        window.location.reload();
+                    }
+                })
+
+
+            })
+            $(document).on("click", "#delBtn", function () {
+
+                let id = this.getAttribute("value");
+
+                alert(id)
+
+                Swal.fire({
+                    title: '삭제하시겠습니까?',
+                    text: "데이터를 손실될 수 있씁니다.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: '취소',
+                    confirmButtonText: '확인',
+                    reverseButtons: false,
+
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url : "/hotel/rest/del",
+                            type: "post",
+                            data: {id : id},
+                            success: function () {
+                                Swal.fire(
+                                    '삭제가 완료되었습니다.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                })
+                            },
+                            error: function () {
+
+                            },
+                        })
+
+
+                    }
+
+                })
+            });
+        })
+    </script>
+
+    <!--스크립트 끝 -->
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>

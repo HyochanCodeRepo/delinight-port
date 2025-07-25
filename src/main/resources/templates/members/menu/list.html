@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+    <head>
+        <title>델리나잇</title>
+    </head>
+
+    <body>
+        <div layout:fragment="adminContent" id="layoutSidenav_content">
+            <main>
+                <!--내용 넣는 곳-->
+                <div class="container-fluid px-5">
+                    <!--텍스트 박스-->
+                    <div class="card mb-4 mt-5">
+                       <div class="card-body">
+                           <!--페이지 이름-->
+                           <div class="d-flex justify-content-between">
+                               <div>
+                                   <h3>등록된 메뉴 목록</h3>
+                                   <ol class="breadcrumb mb-5">
+                                       <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                                       <a href="#" class="breadcrumb-item active no-click">메뉴 관리</a>
+                                   </ol>
+                               </div>
+                               <div>
+                                   <a href="/members/menu/create" class="btn btn-primary mt-5">새 메뉴 +</a>
+                               </div>
+                           </div>
+
+                           <div class="d-flex gap-5 mb-5">
+                               <!--list 테이블-->
+                               <div class="w-50">
+                                   <table class="table table-hover align-middle">
+                                       <thead>
+                                       <th>#</th>
+                                       <th>메뉴명</th>
+                                       <th>가격</th>
+                                       <th>판매여부</th>
+
+                                       </thead>
+                                       <th:block th:each="menuDTO : ${menuDTOList.content}">
+                                           <tr>
+                                               <td th:text="${menuDTO.id}"></td>
+                                               <td>
+                                                   <a th:href="@{/members/menu/list(id=${menuDTO.id})}" class="alink-title">
+                                                       [[${menuDTO.name}]]
+                                                   </a>
+                                               </td>
+                                               <td th:text="${#numbers.formatInteger(menuDTO.price, 3, 'COMMA') + ' 원'}"></td>
+                                               <td th:text="${menuDTO.menuStatus}"></td>
+                                           </tr>
+                                       </th:block>
+                                   </table>
+                               </div>
+
+                               <!--read 카드-->
+                               <div class="w-50" th:if="${selectedMenu != null}">
+                                   <div class="card mb-4">
+                                       <div class="card-body">
+                                           <div class="row mb-4">
+                                               <div class="d-flex align-items-end">
+                                                   <h5 class="form-label mb-0" th:text="${selectedMenu.name}"></h5>
+                                                   <a th:href="@{|/members/menu/update/${selectedMenu.id}|}" class="alink-update ms-3">수정하기</a>
+                                               </div>
+                                           </div>
+
+                                           <div class="row mb-1">
+                                               <label class="col-sm-3 form-label">메뉴 번호</label>
+                                               <div class="col" th:text="${selectedMenu.id}"></div>
+                                           </div>
+
+                                           <div class="row mb-1">
+                                               <label class="col-sm-3 form-label">정보</label>
+                                               <div class="col" th:text="${selectedMenu.content}"></div>
+                                           </div>
+
+                                           <div class="row mb-1">
+                                               <label class="col-sm-3 form-label">가격</label>
+                                               <div class="col" th:text="${selectedMenu.price + '원'}"></div>
+                                           </div>
+
+                                           <div class="row mb-1">
+                                               <label class="col-sm-3 form-label">판매상태</label>
+                                               <div class="col" th:text="${selectedMenu.menuStatus}"></div>
+                                           </div>
+                                           <div class="row mb-1">
+                                               <label class="col-sm-3 form-label">카테고리</label>
+                                               <div class="col" th:text="${selectedMenu.menu}"></div>
+                                           </div>
+
+                                           <div class="row mt-3">
+                                               <div th:if="${selectedMenu.imgUrl}">
+                                                   <img class="rounded-2" width="70%" th:src="${selectedMenu.imgUrl}">
+                                               </div>
+                                           </div>
+                                       </div>
+                                   </div>
+                               </div>
+
+                           </div>
+
+                           <script type="text/javascript" src="/js/imgscript.js"></script>
+
+
+                           <ul class="pagination justify-content-center">
+                               <!-- 처음 페이지 버튼 -->
+                               <li class="page-menu" th:classappend="${menuDTOList.number == 0} ? 'disabled'">
+                                   <a class="page-link" th:href="@{/members/menu/list?page=0}">처음</a>
+                               </li>
+
+                               <!-- 이전 페이지 버튼 -->
+                               <li class="page-menu" th:classappend="${!menuDTOList.hasPrevious()} ? 'disabled'">
+                                   <a class="page-link" th:href="@{/members/menu/list?page={prev}(prev=${menuDTOList.number - 1})}">이전</a>
+                               </li>
+
+                               <!-- 현재 페이지 기준 앞 4개, 뒤 5개 -->
+                               <li class="page-menu"
+                                   th:each="pageNum : ${#numbers.sequence(
+                                (menuDTOList.number - 4 > 0 ? menuDTOList.number - 4 : 0),
+                                (menuDTOList.number + 5 < menuDTOList.totalPages - 1 ? menuDTOList.number + 5 : menuDTOList.totalPages - 1)
+                                )}"
+                                   th:classappend="${pageNum == menuDTOList.number} ? 'active'">
+                                   <a class="page-link" th:href="@{/members/menu/list?page={p}(p=${pageNum})}" th:text="${pageNum + 1}"></a>
+                               </li>
+
+                               <!-- 다음 페이지 버튼 -->
+                               <li class="page-menu" th:classappend="${!menuDTOList.hasNext()} ? 'disabled'">
+                                   <a class="page-link" th:href="@{/members/menu/list?page={next}(next=${menuDTOList.number + 1})}">다음</a>
+                               </li>
+
+                               <!-- 마지막 페이지 버튼 -->
+                               <li class="page-menu" th:classappend="${menuDTOList.number == menuDTOList.totalPages - 1} ? 'disabled'">
+                                   <a class="page-link" th:href="@{/members/menu/list?page={last}(last=${menuDTOList.totalPages - 1})}">마지막</a>
+                               </li>
+                           </ul>
+                           <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+                       </div>
+                    </div>
+                </div>
+            </main>
+
+            <!--푸터 절대 수정 금지!!!!-->
+            <!--푸터-->
+            <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+        </div>
+    </body>
+</html>

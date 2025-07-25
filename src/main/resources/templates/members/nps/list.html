@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+<body>
+
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>데이터 테이블</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">고객만족도 평가</a>
+                    </ol>
+
+                    <div id="centerManagerView" style="display: none;"></div>
+                    <div id="hotelManagerView" style="display: none;"></div>
+                    <div id="storeManagerView" style="display: none;"></div>
+
+                    <div class="row text-center mb-3">
+                        <h3><img src="/img/chevron-double-left.svg" class="prevBtn"
+                                 style="width: 27px; height: 27px"><span data-month="" id="currentMonth"></span>월<img
+                                class="nextBtn" src="/img/chevron-double-right.svg" style="width: 28px; height: 28px">
+                        </h3>
+                    </div>
+                    <!-- 검색조건 영역 -->
+                    <div class="row mb-4">
+                        <div class="col">
+                            <label for="startDate" class="col-form-label form-label me-3">시작일</label>
+                            <div class="col">
+                                <input type="date" id="startDate" name="startDate" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <label for="endDate" class="col-form-label form-label me-3">종료일</label>
+                            <div class="col">
+                                <input type="date" id="endDate" name="endDate" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="hotelSelectWrap col">
+                            <label for="hotelSelect" class="col col-form-label form-label me-3">호텔</label>
+                            <div class="col">
+                                <select id="hotelSelect" class="form-select">
+                                    <option value="">전체</option>
+                                    <!-- 옵션들 동적으로 추가 -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="storeSelectWrap col-3">
+                            <label for="storeSelect" class="col-sm-2 col-form-label form-label">가맹점</label>
+                            <div class="col">
+                                <select id="storeSelect" class="form-select">
+                                    <option value="">전체</option>
+                                    <!-- 옵션들 동적으로 추가 -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col d-flex flex-column justify-content-end">
+                            <button id="filterButton" type="button" class="btn btn-primary" style="width: 44px;"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </div>
+                    </div>
+
+
+                    <!-- 네비게이션 -->
+                    <ul class="nav nav-pills mb-4 hotelTabForHide">
+                        <li class="nav-item ">
+                            <a class="nav-link active" data-tabname="hotelTab" href="#" id="hotelTab">호텔</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-tabname="storeTab" href="#" id="storeTab">가맹점</a>
+                        </li>
+                    </ul>
+
+
+                    <div style="overflow-y: auto; height: 450px">
+                    <table id="npsHotelTable" class="table align-middle table-hover hotelTitle">
+                        <thead>
+                        <th style="width: 5%;">#</th>
+                        <th style="width: 16%;">호텔명</th>
+                        <th style="width: 3%;">1</th>
+                        <th style="width: 3%;">2</th>
+                        <th style="width: 3%;">3</th>
+                        <th style="width: 3%;">4</th>
+                        <th style="width: 7%;">5</th>
+                        <th style="width: 10%;">평균</th>
+                        <th>기타문의</th>
+                        </thead>
+
+                        <tbody>
+                        <!-- AJAX 데이터 삽입 -->
+                        </tbody>
+                    </table>
+
+                    <table id="npsStoreTable" class="table align-middle table-hover" style="display: none">
+                        <thead>
+                            <th style="width: 5%;">#</th>
+                            <th style="width: 16%;">가맹점명</th>
+                            <th style="width: 3%;">1</th>
+                            <th style="width: 3%;">2</th>
+                            <th style="width: 3%;">3</th>
+                            <th style="width: 3%;">4</th>
+                            <th style="width: 7%;">5</th>
+                            <th style="width: 10%;">평균</th>
+                            <th>기타문의</th>
+                        </thead>
+
+                        <tbody>
+                        <!-- AJAX 데이터 삽입 -->
+                        </tbody>
+                    </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 모달 HTML -->
+            <div id="myModal" style="display: none;">
+                <div class="modal-content">
+                    <span id="closeModal" class="close">&times;</span>
+                    <p id="modalContent"></p>
+                </div>
+            </div>
+        </div >
+
+
+    </main>
+
+    <script th:inline="javascript" >
+
+        $(document).ready(function () {
+            let currentRole = [[${role.name()}]]
+            if(currentRole==="STOREADMIN"){
+
+            }else
+            {
+                $(".npsStoreTable").hide()
+            }
+
+
+            $('#hotelSelect').on('change', function () {
+                const selectedHotel = $(this).val()
+                console.log(`[필터] 호텔 선택: ${selectedHotel || '전체'}`)
+                const filteredHotelData = selectedHotel ? hotelData.filter(nps => nps.hotelName === selectedHotel) : hotelData
+                renderTable('#npsHotelTable', filteredHotelData)
+
+                const filteredStores = selectedHotel ? [...new Set(storeData.filter(nps => nps.hotelName === selectedHotel).map(nps => nps.storeName))] : [...new Set(storeData.map(nps => nps.storeName))]
+
+                updateStoreSelectBox(filteredStores)
+            })
+            $('#storeSelect').on('change', function () {
+                const selectedHotel = $('#hotelSelect').val()
+                const selectedStore = $(this).val()
+                console.log(`[필터] 가맹점 선택: ${selectedStore || '전체'}, 호텔: ${selectedHotel || '전체'}`)
+
+                const filteredStoreData = storeData.filter(nps => {
+                    const hotelMatch = selectedHotel ? nps.hotelName === selectedHotel : true
+                    const storeMatch = selectedStore ? nps.storeName === selectedStore : true
+                    return hotelMatch && storeMatch
+                })
+
+                renderTable('#npsStoreTable', filteredStoreData)
+            })
+
+            // 필터 조회 버튼
+            $('#filterButton').on('click', function () {
+                const startDate = $('#startDate').val()
+                const endDate = $('#endDate').val()
+                console.log(`[조회] 필터 버튼 클릭 - 시작일: ${startDate}, 종료일: ${endDate}`)
+                loadNpsData(startDate, endDate, role)
+            })
+
+            // 전역 변수
+            let npsList = [], hotelData = [], storeData = [], stores = [], hotels = []
+            let today = new Date()
+            let currentMonth = today.getMonth()+1;
+            let startOfMonth = new Date(today.getFullYear(), today.getMonth(), 2)
+            let endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+            $("#currentMonth").attr("data-month", today.getMonth() + 1)
+            $("#currentMonth").html(today.getMonth() + 1)
+
+            // 날짜 초기 설정
+            $('#startDate').val(formatDate(startOfMonth))
+            $('#endDate').val(formatDate(endOfMonth))
+            console.log('[초기화] 기본 날짜 범위 설정 완료')
+
+            // 권한 가져오기
+            const role = [[${role}]]
+            console.log(`[초기화] 사용자 권한: ${role}`)
+            initRoleView(role)
+
+            $(".prevBtn").on("click", function () {
+                previousMonth()
+            })
+            $(".nextBtn").on("click", function () {
+                nextMonth()
+            })
+
+            // 탭 전환
+            $('#hotelTab').on('click', () => switchTab('hotel'))
+            $('#storeTab').on('click', () => switchTab('store'))
+            console.log(`[탭 전환] 현재 탭: ${type === 'hotel' ? '호텔' : '가맹점'}`)
+
+
+            // 호텔 셀렉트박스 선택 시
+
+            function previousMonth() {
+                currentMonth = currentMonth - 1
+                let startDate = new Date(today.getFullYear(), currentMonth - 1, 2)
+                let endDate = new Date(today.getFullYear(), currentMonth, 1)
+                let format = (d) => d.toISOString().split('T')[0]
+
+                $('#startDate').val(format(startDate))
+                $('#endDate').val(format(endDate))
+
+                loadNpsData(format(startDate), format(endDate),role)
+                $("#currentMonth").html(currentMonth)
+            }
+
+
+            function nextMonth() {
+                currentMonth = currentMonth + 1
+                let startDate = new Date(today.getFullYear(), currentMonth - 1, 2)
+                let endDate = new Date(today.getFullYear(), currentMonth, 1)
+                let format = (d) => d.toISOString().split('T')[0]
+
+                $('#startDate').val(format(startDate))
+                $('#endDate').val(format(endDate))
+
+                loadNpsData(format(startDate), format(endDate), role)
+                $("#currentMonth").html(currentMonth)
+            }
+
+            // 가맹점 셀렉트박스 선택 시
+
+
+            // 유틸리티 / 기능 함수
+            function formatDate(date) {
+                return date.toISOString().split('T')[0]
+            }
+
+            function switchTab(type) {
+                $('.nav-link').removeClass('active') // 모두 비활성화
+                if (type === 'hotel') {
+
+                    $('#npsHotelTable').show()
+                    $('#npsStoreTable').hide()
+                    $('#hotelTab').addClass('active')
+                } else if (type === 'store') {
+                    $('#npsHotelTable').hide()
+                    $('#npsStoreTable').show()
+                    $('#storeTab').addClass('active')
+                } else {
+                    $('#npsHotelTable').show()
+                    $('#npsStoreTable').hide()
+                    $('#allTab').addClass('active')
+                }
+            }
+
+            function initRoleView(role) {
+                if (role === 'SUPERADMIN') {
+                    $('#centerManagerView').show()
+                    loadNpsData($('#startDate').val(), $('#endDate').val(), 'center')
+                } else if (role === 'ADMIN') {
+                    $('#hotelManagerView').show()
+                    $('.hotelSelectWrap').hide()
+                    $('#npsStoreTable').hide()
+                    loadNpsData($('#startDate').val(), $('#endDate').val(), 'hotel')
+                } else if (role === 'STOREADMIN') {
+                    $('#storeManagerView').show()
+                    $('.storeSelectWrap, .hotelSelectWrap, .hotelTitle, .hotelTabForHide').hide()
+                    loadNpsData($('#startDate').val(), $('#endDate').val(), 'store')
+                } else {
+                    console.warn('알 수 없는 역할:', role)
+                }
+                switchTab('hotel')
+            }
+
+            function loadNpsData(startDate, endDate, type) {
+                console.log(`[데이터] NPS 데이터 불러오기 시작 - 유형: ${type}, 기간: ${startDate} ~ ${endDate}`)
+                $.ajax({
+                    url: '/api/nps/list',
+                    method: 'GET',
+                    data: {startDate, endDate},
+                    success: function (data) {
+                        console.log(`[데이터] NPS 데이터 로딩 완료 - 총 ${data.length}건`)
+                        npsList = data
+                        hotelData = npsList.filter(item => item.hotelOrStore === 'hotel' && item.insertTime >= startDate && item.insertTime <= endDate)
+                        storeData = npsList.filter(item => item.hotelOrStore === 'store' && item.insertTime >= startDate && item.insertTime <= endDate)
+
+                        hotels = [...new Set(hotelData.map(item => item.hotelName))]
+                        stores = [...new Set(storeData.map(item => item.storeName))]
+
+                        console.log(hotels)
+                        updateHotelSelectBox(hotels)
+                        updateStoreSelectBox(stores)
+                        renderTables()
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('NPS 데이터 로딩 실패:', error)
+                    }
+                })
+            }
+
+            function updateHotelSelectBox(hotels) {
+                const hotelSelect = $('#hotelSelect')
+                hotelSelect.empty().append('<option value="">전체</option>')
+                hotels.forEach(hotel => {
+                    hotelSelect.append(`<option value="${hotel}">${hotel}</option>`)
+                })
+            }
+
+            function updateStoreSelectBox(stores) {
+                const storeSelect = $('#storeSelect')
+                storeSelect.empty().append('<option value="">전체</option>')
+                stores.forEach(store => {
+                    storeSelect.append(`<option value="${store}">${store}</option>`)
+                })
+            }
+
+            function renderTables() {
+                if (hotelData.length > 0) {
+                    renderTable('#npsHotelTable', hotelData)
+                } else {
+                    renderTable('#npsHotelTable', hotelData)
+                }
+
+                if (storeData.length > 0) {
+                    renderTable('#npsStoreTable', storeData)
+                } else {
+                    renderTable('#npsStoreTable', storeData)
+                }
+            }
+
+            function renderTable(tableId, data) {
+                const tableBody = $(tableId).find('tbody')
+                tableBody.empty()
+
+                data.forEach(nps => {
+                    const name = nps.hotelOrStore === 'hotel' ? nps.hotelName : nps.storeName
+                    const row = `
+                                    <tr>
+                                        <td>${nps.id}</td>
+                                        <td>${name}</td>
+                                        <td>${nps.questionOne}</td>
+                                        <td>${nps.questionTwo}</td>
+                                        <td>${nps.questionThree}</td>
+                                        <td>${nps.questionFour}</td>
+                                        <td>${nps.questionFive}</td>
+                                        <td>${nps.totalScore}</td>
+                                        <td>${nps.etcQuestion}</td>
+                                    </tr>
+                                `
+                    tableBody.append(row)
+                })
+
+            }
+
+
+        })
+
+
+    </script>
+
+</div>
+
+</body>
+</html>

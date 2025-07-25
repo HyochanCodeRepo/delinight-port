@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<h1>체크인</h1>
+    예약 번호 : <input type="text" id="reservationNum">
+    <button class="btn btn-primary mb-3" id="reservBtn">조회</button>
+    회원 조회 : <input type="email" id="emailcheck">
+    <button class="btn btn-primary" id="checkIdBtn">조회</button>
+<div id="result">
+    <p>userId : <span id="id"></span></p>
+    <p>이름 : <span id="name"></span></p>
+    <p>이메일 : <span id="email"></span></p>
+    <p>핸드폰번호 : <span id="phone"></span></p>
+</div>
+
+
+<table class="table table-hover">
+
+    <thead>
+    <th scope="col">#</th>
+    <th scope="col">이름</th>
+    <th scope="col">상세</th>
+    <th scope="col">체크인</th>
+    <th scope="col">체크아웃</th>
+    <th scope="col">핸드폰번호</th>
+    <th scope="col">이메일</th>
+    <th scope="col">인증번호(ID)</th>
+    <th scope="col">비밀번호(PW)</th>
+    <th scope="col">결제 금액</th>
+    <th scope="col">Status</th>
+    <th class="tdContainer">회원등록</th>
+    </thead>
+
+    <tbody id="checkinTable">
+    <th:block  th:each="list:${checkInDTOList}">
+        <tr>
+            <th scope="row offset-4" th:text="${list.id}" th:value="${list.id}" class="checkinId"></th>
+
+            <td th:text="${list.roomDTO.name}"></td>
+            <td th:text="${list.roomDTO.content}"></td>
+            <td>
+                <th:block th:if="${list.checkinDate != null}">
+                    <span th:text="${list.checkinDate}"></span>
+                </th:block>
+                <th:block th:if="${list.checkinDate == null}">
+                    <input  name="checkinDate" class="checkinDate" type="date">
+                </th:block>
+            </td>
+
+            <td>
+                <th:block th:if="${list.checkoutDate != null}">
+                    <span th:text="${list.checkoutDate}"></span>
+                </th:block>
+                <th:block th:if="${list.checkoutDate == null}">
+                    <input class="checkoutDate" type="date" name="checkoutDate">
+                </th:block>
+            </td>
+
+            <td>
+
+                <th:block th:if="${list.guestDTO != null}">
+                    <span th:text="${list.guestDTO.phone}"></span>
+                </th:block>
+                <th:block th:if="${list.guestDTO == null and list.usersDTO != null}">
+                    <span th:text="${list.usersDTO.phone}"></span>
+                </th:block>
+                <th:block th:if="${list.guestDTO == null and list.usersDTO == null}">
+                    <input placeholder="핸드폰번호" class="phone">
+                </th:block>
+            </td>
+            <td>
+                <th:block th:if="${list.guestDTO == null and list.usersDTO == null}">
+                    <input class="email" placeholder="이메일">
+                    <input class="userId" hidden="hidden" >
+                </th:block>
+                <th:block th:if="${list.guestDTO != null}">
+                    <span th:text="${list.guestDTO.email}"></span>
+                    <input class="userId" hidden="hidden" >
+                </th:block>
+                <th:block th:if="${list.usersDTO != null}">
+                    <span th:text="${list.usersDTO.email}"></span>
+                    <input class="userId" hidden="hidden" >
+                </th:block>
+
+            </td>
+
+
+            <td>
+                <th:block th:if="${list.certNum ==0}">
+                    <span>Vacancy</span>
+                </th:block>
+                <th:block th:if="${list.certNum >0}">
+                    <span th:text="${list.certNum}"></span>
+                </th:block>
+            </td>
+
+            <td>
+                <th:block th:if="${list.certPass == null}">
+                    <span>Vacancy</span>
+
+                </th:block>
+                <th:block th:if="${list.certPass != null}">
+                    <span th:text="${list.certPass}"></span>
+
+                </th:block>
+            </td>
+            <td>
+
+            </td>
+            <td>
+                <th:block th:if="${list.checkInStatus.name() == 'CHECKIN'}">
+                    <button class="btn btn-danger" id="checkoutBtn" th:value="${list.id}">체크아웃</button>
+                </th:block>
+                <th:block th:if="${list.checkInStatus.name() == 'VACANCY'}">
+                    <button class="btn btn-primary" id="checkinBtn" th:value="${list.id}">체크인 등록</button>
+                </th:block>
+            </td>
+
+            <td class="trContainer" style="display: none" >
+                <button th:data-checkinid="${list.id}" class="plusBtn btn btn-primary" style="display: inline">+</button>
+                <button th:data-checkinid="${list.id}" class="minusBtn btn btn-primary" style="display: none">-</button>
+
+            </td>
+
+        </tr>
+
+
+    </th:block>
+
+
+
+
+    </tbody>
+
+</table>
+
+
+
+
+<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+<script th:inline="javascript">
+
+    $(document).on("click", "#addCheckinBtn", function () {
+
+    });
+
+    function formatDate(dateString) {
+        let year = "20" + dateString.substring(0, 2);
+        let month = dateString.substring(2, 4);
+        let day = dateString.substring(4, 6);
+        return `${year}-${month}-${day}`;
+    }
+
+    function updateRow(roomid, checkinDate, checkoutDate, certid) {
+        // 모든 checkinId 순회
+        let row = $("th.checkinId").filter(function () {
+            let renderedId = $(this).text().trim(); // th 태그의 렌더링된 텍스트 값 가져오기
+            console.log("현재 행의 roomid (렌더링된): ", renderedId, " / 비교 대상: ", roomid); // 디버깅 로그
+            return renderedId === roomid.toString(); // roomid와 비교
+        }).closest("tr"); // 매칭된 태그의 부모 <tr> 찾기
+
+        if (row.length) {
+            console.log("매칭된 행을 찾았습니다: ", row); // 성공적으로 찾은 행 출력
+            // 해당 행의 입력 필드 값 설정
+            row.find(".checkinDate").val(checkinDate);
+            row.find(".checkoutDate").val(checkoutDate);
+            row.find(".certid").text(certid);
+
+        } else {
+            console.error("해당 roomId를 가진 행을 찾을 수 없습니다: " + roomid);
+        }
+    }
+
+    function updateRow2(id, phone, email, userId) {
+        // 모든 checkinId 순회
+        let row = $("th.checkinId").filter(function () {
+            let renderedId = $(this).text().trim(); // th 태그의 렌더링된 텍스트 값 가져오기
+            console.log("현재 행의 roomid (렌더링된): ", renderedId, " / 비교 대상: ", id); // 디버깅 로그
+            return renderedId === id.toString(); // roomid와 비교
+        }).closest("tr"); // 매칭된 태그의 부모 <tr> 찾기
+
+        if (row.length) {
+            console.log("매칭된 행을 찾았습니다: ", row); // 성공적으로 찾은 행 출력
+            // 해당 행의 입력 필드 값 설정
+            row.find(".phone").val(phone);
+            row.find(".email").val(email);
+            row.find(".userId").val(userId);
+
+        } else {
+            console.error("해당 roomId를 가진 행을 찾을 수 없습니다: " + roomid);
+        }
+    }
+
+    function updateRow3(id, phone, email) {
+        // 모든 checkinId 순회
+        let row = $("th.checkinId").filter(function () {
+            let renderedId = $(this).text().trim(); // th 태그의 렌더링된 텍스트 값 가져오기
+            console.log("현재 행의 roomid (렌더링된): ", renderedId, " / 비교 대상: ", id); // 디버깅 로그
+            return renderedId === id.toString(); // roomid와 비교
+        }).closest("tr"); // 매칭된 태그의 부모 <tr> 찾기
+
+        if (row.length) {
+            console.log("매칭된 행을 찾았습니다: ", row); // 성공적으로 찾은 행 출력
+            // 해당 행의 입력 필드 값 설정
+            row.find(".phone").val(null);
+            row.find(".email").val(null);
+
+        } else {
+            console.error("해당 roomId를 가진 행을 찾을 수 없습니다: " + roomid);
+        }
+    }
+
+
+
+
+
+    $(function () {
+        $(document).on("click", "#checkinBtn", function () {
+            let id = this.getAttribute("value");
+            let checkinDate = $(this).closest("tr").find(".checkinDate").val();
+            let checkoutDate = $(this).closest("tr").find(".checkoutDate").val();
+            let phone = $(this).closest("tr").find(".phone").val();
+            let email = $(this).closest("tr").find(".email").val();
+            let userId = $(this).closest("tr").find(".userId").val();
+
+
+            $.ajax({
+                url : "/checkin/rest/register",
+                type: "post",
+                contentType : "application/json",
+                data : JSON.stringify({
+                    id : id,
+                    checkinDate : checkinDate,
+                    checkoutDate: checkoutDate,
+                    phone : phone,
+                    email : email,
+                    userId : userId
+
+                }),
+                success: function (data) {
+                    console.log(data)
+                    location.reload()
+                },
+            })
+        });
+    });
+
+    $(function () {
+        $(document).on("click", "#checkoutBtn", function () {
+            let id = $(this).val();
+
+
+            $.ajax({
+                url : "/checkin/rest/out?id=" + id,
+                type: "post",
+
+                success: function (data) {
+                    location.reload()
+                },
+            })
+        });
+    });
+
+    $(function () {
+
+        $(document).on("click", ".plusBtn",function () {
+            let id = $(this).data("checkinid")
+            let phone = $("#phone").text();
+            let email = $("#email").text();
+            let userId = $("#id").text();
+
+
+            updateRow2(id, phone, email,userId);
+            $(".plusBtn").hide();
+            $(".minusBtn").show();
+
+        })
+        $(document).on("click", ".minusBtn",function () {
+            let id = $(this).data("checkinid")
+            let phone = $("#phone").text();
+            let email = $("#email").text();
+
+
+            updateRow3(id, phone, email);
+
+                $(".plusBtn").show();
+                $(".minusBtn").hide();
+
+        })
+
+        $(document).on("click", "#checkIdBtn", function () {
+            let emailcheck = $("#emailcheck").val();
+
+
+            $.ajax({
+                url: "/checkin/rest/checkemail",
+                type: "post",
+                data: {"emailcheck": emailcheck},
+                success: function (usersDTO) {
+
+                    $("#name").text(usersDTO.name);
+                    $("#email").text(usersDTO.email);
+                    $("#phone").text(usersDTO.phone);
+                    $("#id").text(usersDTO.id);
+
+                    let newRow =
+                        `
+                        <tr>
+                            <td>${usersDTO.name}</td>
+                            <td>${usersDTO.email}</td>
+                            <td>${usersDTO.id}</td>
+                        </tr>
+                        `
+                    $("#checkinTable tbody").append(newRow);
+                    $(".trContainer").show();
+
+                },
+                error: function () {
+                    // if (xhr.status === 400) {
+                    //     alert("이메일 값이 비어 있습니다. 다시 입력해주세요");
+                    // }else if (xhr.status === 404) {
+                    //     alert("회원 정보를 찾을 수 없습니다.");
+                    // }else {
+                    //     alert("알 수 없는 오류가 발생했습니다.");
+                    // }
+                    // console.log("요청데이터 : ", emailcheck)
+                    // console.log("응답 상태 코드 : ", xhr.status);
+                    // console.log("응답 메시지", xhr.responseText);
+
+                },
+            })
+        });
+    });
+
+
+
+
+    $(function () {
+
+
+        $(document).on("click", "#reservBtn", function () {
+            let reservNum = $("#reservationNum").val();
+            let id = $(".checkinId").val();
+
+
+            $.ajax({
+                url: "/checkin/rest/reservation",
+                type: "post",
+                data : {"reservNum" :reservNum },
+                success: function (response) {
+                    let roomid = response.roomid;
+                    let checkinDate = formatDate(response.checkinDate);
+                    let checkoutDate = formatDate(response.checkoutDate);
+                    let certid = response.certid;
+
+                    updateRow(roomid, checkinDate, checkoutDate,certid)
+
+                },
+            })
+        });
+    });
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

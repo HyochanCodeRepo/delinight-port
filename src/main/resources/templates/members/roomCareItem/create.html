@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+    <head>
+        <title>델리나잇</title>
+    </head>
+
+    <body>
+    <!--이 줄 div layout:fragment명과 id명 절대 수정 금지!!!!-->
+    <div layout:fragment="adminContent" id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-5">
+                <!--내용 넣는 곳-->
+                <!--반드시 이 아래에서만 작업-->
+
+                <!--페이지 이름-->
+                <h3 id="test" class="mt-5">룸 케어 새 메뉴 등록</h3>
+                <ol class="breadcrumb mb-4">
+                    <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                    <a href="/members/roomCare/list" class="breadcrumb-item active ">룸 케어 목록</a>
+                </ol>
+
+                <div class="card custom-shadow mb-4">
+                    <div class="card-body">
+                        <h5 class="mb-4 fw-bold">기본 정보</h5>
+
+                        <!--카드 제목 구분선-->
+                        <hr class="hrMain">
+                        <form action="/members/roomCareItem/create" method="post">
+
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label">메뉴명</label>
+                                <div class="col-sm-3">
+                                    <input name="name" type="text" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <label class="col-sm-2 col-form-label form-label">내용</label>
+                                <div class="col-sm-4">
+                                    <textarea name="content" class="form-control" rows="1" oninput="autoResize(this)"
+                                              style="overflow:hidden; resize: none; min-height: 1rem">
+                                    </textarea>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-5">
+                                <button type="submit" class="btn btn-primary me-2 px-4">등록</button>
+                                <a href="/members/roomCareItem/list" class="btn btn-gray px-4">취소</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script>
+            function autoResize(a) {
+                a.style.height = 'auto'; // 높이 초기화
+                a.style.height = a.scrollHeight + 'px'; // 글자 수에 맞게 높이 조정
+            }
+        </script>
+
+        <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+
+    </div>
+
+    </body>
+</html>

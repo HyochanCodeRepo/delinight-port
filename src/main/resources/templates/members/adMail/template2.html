@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+<div style="max-width:650px; margin:0 auto; font-family:'Apple SD Gothic Neo','Helvetica Neue',sans-serif; background-color:#fff; border:1px solid #ddd; border-radius:12px; overflow:hidden;">
+    <!-- 제목 영역 -->
+    <div style="background-color:#002b5b; color:#ffd700; padding:24px 32px; text-align:center;">
+        <h2 style="margin:0; font-size:22px; line-height:1.4;">[[${title}]]</h2>
+    </div>
+
+    <!-- 이미지 삽입 -->
+    <div style="text-align:center;">
+        <img src="cid:adImage" alt="이벤트 이미지" style="width:100%; max-height:280px; object-fit:cover;">
+    </div>
+
+    <!-- 본문 -->
+    <div style="padding:24px 32px; color:#222; background-color:#f8f8f8;">
+        <h3 style="font-size:18px; margin-top:0; color:#002b5b;">🎉 행사 개요</h3>
+        <ul style="list-style:none; padding:0; margin:0 0 24px 0; font-size:15px; line-height:1.8;">
+            <li><strong>📅 일정 :</strong> [[${period}]]</li>
+            <li><strong>📘 내용 :</strong> [[${content}]]</li>
+            <li><strong>🎁 혜택 :</strong> [[${benefit}]]</li>
+        </ul>
+
+        <div style="border-left:4px solid #002b5b; background-color:#eef3fa; padding:16px; font-size:14.5px; color:#444; line-height:1.6; margin-bottom:20px;">
+            <div th:utext="${mainContent}"></div>  <!-- 줄바꿈 포함된 HTML 렌더링 -->
+        </div>
+
+        <div style="text-align:center; margin:24px 0;">
+            <a href="http://wooriproject.iptime.org:9003/users/login"
+               style="display:inline-block; background-color:#ffd700; color:#002b5b; text-decoration:none; padding:12px 28px; border-radius:8px; font-weight:bold;">
+                이벤트 참여하기
+            </a>
+        </div>
+    </div>
+
+    <div style="padding:16px; background-color:#eee; font-size:12.5px; color:#666; text-align:center;">
+        본 메일은 [[${hotelName}]] 회원에게 발송되었습니다. <br>
+        궁금하신 점은 호텔 프론트에 문의해 주세요.
+    </div>
+</div>
+
+</body>
+</html>

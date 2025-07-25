@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/desktop/layout}"
+>
+<head>
+    <title>델리나잇</title>
+</head>
+
+<body>
+<div layout:fragment="adminContent" id="layoutSidenav_content">
+    <main>
+        <div class="container-fluid px-5">
+            <div class="card custom-shadow mb-4 mt-5">
+                <div class="card-body">
+                    <h3>가맹점주 목록</h3>
+                    <ol class="breadcrumb mb-5">
+                        <a href="/members/account/dashHub" class="breadcrumb-item active">홈</a>
+                        <a href="#" class="breadcrumb-item active no-click">가맹점 관리</a>
+                    </ol>
+
+                    <table class="table align-middle table-hover">
+
+                        <thead>
+                        <th scope="col">#</th>
+                        <th scope="col">이름</th>
+                        <th scope="col">핸드폰번호</th>
+                        <th scope="col">email</th>
+                        <th scope="col">role</th>
+                        <th scope="col">소속</th>
+                        <th scope="col">수정</th>
+                        </thead>
+
+                        <tbody>
+                        <th:block  th:each="list,stat:${membersEntityList}">
+                            <tr>
+                                <th scope="row offset-4" th:text="${list.id}" hidden="hidden"></th>
+                                <th scope="row" th:text="${stat.count}"></th>
+                                <td th:text="${list.name}" th:data-num="${list.id}" th:href="@{/members/hotel/read(id=${list.id})}"></td>
+                                <td th:text="${list.phone}"></td>
+
+                                <td th:text="${list.email}"></td>
+                                <td th:text="${list.role}"></td>
+                                <td>
+                                    <th:block th:if="${list.hotelEntity != null}">
+                                        <span th:text="${list.hotelEntity.name}"></span>
+                                    </th:block>
+                                    <th:block th:if="${list.hotelEntity == null}">
+                                        <!--호텔 리스트 반복-->
+                                        <select class="hotelSelect" name="hotelId">
+                                            <!-- 호텔 리스트 반복 -->
+                                            <th:block th:each="hotel : ${hotelEntityList}">
+                                                <option id="hotelNames" th:value="${hotel.id}" th:text="${hotel.name}"></option>
+                                            </th:block>
+                                        </select>
+                                        <button class="btn btn-primary" id="plusBtn"  th:value="${list.id}">+</button>
+                                    </th:block>
+                                </td>
+
+                                <td>
+                                    <a class="btn btn-outline-danger" th:value="${list.id}" id="dbtn"><i class="fa-solid fa-trash hoverBtn text-danger"></i></a>
+                                </td>
+                            </tr>
+
+                        </th:block>
+
+
+
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!--스크립트 시작 -->
+    <script>
+        $(function (){
+            $(document).on("click", "#plusBtn", function () {
+                let id = this.getAttribute("value")
+                let selectedOption = $("#hotelSelect").find("option:selected");
+                let hotelId = selectedOption.val();
+                let hotelName = selectedOption.text();
+                alert(id)
+                alert(hotelId);
+                alert(hotelName)
+
+                $.ajax({
+                    url: "/hotel/rest/modify",
+                    type: "post",
+                    data : {
+                        id : id,
+                        hotelId : hotelId,
+                        hotelName : hotelName
+                    },
+                    success: function (data) {
+                        alert("성공")
+                        alert(data)
+                        location.reload();
+                    },
+                })
+            });
+
+
+            $(document).on("click", "#dbtn", function () {
+
+                alert(123)
+                let id = this.getAttribute("value");
+
+                Swal.fire({
+                    title: '삭제하시겠습니까?',
+                    text: "데이터를 손실될 수 있씁니다.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    cancelButtonText: '취소',
+                    confirmButtonText: '확인',
+                    reverseButtons: false,
+
+                }).then((result) => {
+
+                    if (result.isConfirmed) {
+
+                        $.ajax({
+                            url : "/hotel/rest/del",
+                            type: "delete",
+                            data: {id : id},
+                            success: function () {
+                                Swal.fire(
+                                    '삭제가 완료되었습니다.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                })
+                            },
+                            error: function () {
+
+                            },
+                        })
+
+
+                    }
+
+                })
+            });
+        })
+    </script>
+
+    <!--스크립트 끝 -->
+
+    <!--푸터 절대 수정 금지!!!!-->
+    <!--푸터-->
+    <div th:replace="~{fragments/desktop/adminfooter::adminFooter}"></div>
+</div>
+</body>
+</html>
